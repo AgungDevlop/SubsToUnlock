@@ -29,6 +29,12 @@ const API_TOKEN = "AgungDeveloper";
 const IMGBB_API_KEY = "54e38a2c97e1a04f6860fb07718272be";
 const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload?expiration=600&key=" + IMGBB_API_KEY;
 
+// Fungsi untuk memvalidasi URL
+const isValidUrl = (url: string): boolean => {
+  const urlPattern = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w- ./?%&=]*)?$/i;
+  return urlPattern.test(url);
+};
+
 // Tipe untuk FormData
 interface FormData {
   title?: string;
@@ -418,12 +424,22 @@ const Home: React.FC = () => {
   };
 
   const generateLink = async () => {
-    // Validasi apakah tlink1 sudah diisi
+    // Cek apakah tlink1 sudah diisi
     if (!formData.targetLinks?.tlink1) {
       setModalState({
         isOpen: true,
         type: "error",
         message: "Please enter the Target Link before generating!",
+      });
+      return;
+    }
+
+    // Validasi apakah tlink1 adalah URL yang valid
+    if (!isValidUrl(formData.targetLinks.tlink1)) {
+      setModalState({
+        isOpen: true,
+        type: "error",
+        message: "Target Link must be a valid URL (e.g., https://example.com)!",
       });
       return;
     }
@@ -445,6 +461,12 @@ const Home: React.FC = () => {
 
       if (response.ok) {
         setGeneratedKey(result.key);
+        setModalState({
+          isOpen: true,
+          type: "success",
+          message: "Link generated successfully!",
+        });
+        setTimeout(() => setModalState({ isOpen: false, type: "", message: "" }), 2000);
       } else {
         throw new Error(result.error || "Failed to generate link");
       }
@@ -552,9 +574,6 @@ const Home: React.FC = () => {
     : [];
   const thumbnail = formData["Advance Option"]?.thumb;
 
-  // Validasi apakah tlink1 sudah diisi untuk mengaktifkan tombol Generate Link
-  const isGenerateDisabled = loading || !formData.targetLinks?.tlink1;
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -614,6 +633,7 @@ const Home: React.FC = () => {
               placeholder="Enter Target Link"
               onChange={(e) => handleTopLevelInputChange("tlink1", e.target.value)}
               disabled={loading}
+              value={formData.targetLinks?.tlink1 || ""}
             />
           </div>
 
@@ -622,7 +642,7 @@ const Home: React.FC = () => {
               text={loading ? "Generating..." : "Generate Link"}
               icon={FaLink}
               onClick={generateLink}
-              disabled={isGenerateDisabled} // Tombol disabled jika tlink1 kosong atau sedang loading
+              disabled={loading}
             />
             <AnimatedButton
               text="Preview"
@@ -729,71 +749,71 @@ const Home: React.FC = () => {
                 </div>
                 <div className="p-2 rounded-full bg-opacity-20 bg-white">
                   <FaArrowRight className="w-5 h-5 text-gray-400" />
-                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        </Modal>
+        </div>
+      </Modal>
 
-        <footer className="mt-8 bg-gray-900 py-6 border-t border-purple-700">
-          <div className="max-w-3xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-            <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-4 md:mb-0">
-              <Link
-                to="/terms-and-conditions"
-                className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
-              >
-                Terms of Service
-              </Link>
-              <Link
-                to="/privacy-policy"
-                className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                to="/about-us"
-                className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
-              >
-                About
-              </Link>
-              <Link
-                to="/contact"
-                className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
-              >
-                Contact
-              </Link>
-            </div>
-            <div className="flex gap-4">
-              <a
-                href="https://t.me/subs4unlock"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
-              >
-                <FaTelegram className="w-6 h-6" />
-              </a>
-              <a
-                href="https://wa.me/62881037428871"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
-              >
-                <FaWhatsapp className="w-6 h-6" />
-              </a>
-              <a
-                href="https://youtube.com/@subs4unlock"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
-              >
-                <FaYoutube className="w-6 h-6" />
-              </a>
-            </div>
+      <footer className="mt-8 bg-gray-900 py-6 border-t border-purple-700">
+        <div className="max-w-3xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-4 md:mb-0">
+            <Link
+              to="/terms-and-conditions"
+              className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
+            >
+              Terms of Service
+            </Link>
+            <Link
+              to="/privacy-policy"
+              className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/about-us"
+              className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
+            >
+              About
+            </Link>
+            <Link
+              to="/contact"
+              className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
+            >
+              Contact
+            </Link>
           </div>
-        </footer>
-      </motion.div>
-    );
-  };
+          <div className="flex gap-4">
+            <a
+              href="https://t.me/subs4unlock"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
+            >
+              <FaTelegram className="w-6 h-6" />
+            </a>
+            <a
+              href="https://wa.me/62881037428871"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
+            >
+              <FaWhatsapp className="w-6 h-6" />
+            </a>
+            <a
+              href="https://youtube.com/@subs4unlock"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-300 hover:text-purple-400 transition-colors duration-200"
+            >
+              <FaYoutube className="w-6 h-6" />
+            </a>
+          </div>
+        </div>
+      </footer>
+    </motion.div>
+  );
+};
 
-  export default Home;
+export default Home;
