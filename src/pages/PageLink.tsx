@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  FaYoutube, FaWhatsapp, FaTelegram, FaTiktok, FaGlobe,
+  FaYoutube, FaTelegram, FaTiktok, FaGlobe,
   FaInstagram, FaFacebook, FaLink, FaLock, FaComment,
   FaThumbsUp, FaUsers, FaEnvelope, FaArrowRight, FaCheck, FaExclamationTriangle
 } from 'react-icons/fa';
@@ -56,12 +56,11 @@ export function PageLink() {
   }, [key]);
 
   const isExpired = (expDate: string) => {
-    const currentDate = new Date(); // Menggunakan tanggal saat ini yang sebenarnya
+    const currentDate = new Date();
     const expirationDate = new Date(expDate);
-    // Reset jam, menit, detik, dan milidetik ke 0 untuk perbandingan hanya berdasarkan tanggal
     currentDate.setHours(0, 0, 0, 0);
     expirationDate.setHours(0, 0, 0, 0);
-    return currentDate >= expirationDate; // Link expired jika tanggal saat ini sama atau setelah exp
+    return currentDate >= expirationDate;
   };
 
   const verifyPassword = () => {
@@ -76,7 +75,7 @@ export function PageLink() {
     }
   };
 
-  const handleButtonClick = (url: string, index: number, isTarget: boolean, socialButtonsCount: number, buttonKey: string) => {
+  const handleButtonClick = (url: string, index: number, isTarget: boolean, buttonKey: string) => {
     window.open(url, '_blank');
     setButtonStates(prev => ({ ...prev, [buttonKey]: 'loading' }));
 
@@ -153,7 +152,6 @@ export function PageLink() {
   const data = responseData?.data?.data;
   const expired = data?.["Advance Option"]?.exp && isExpired(data["Advance Option"].exp);
 
-  // Jika link sudah expired, hanya tampilkan pesan expired
   if (expired) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
@@ -172,7 +170,6 @@ export function PageLink() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4">
-      {/* Note as Yellow Alert at Top */}
       {data?.["Advance Option"]?.note && (
         <div className="w-full max-w-md mb-4 bg-yellow-500 text-black p-4 rounded-lg shadow-md flex items-center">
           <FaExclamationTriangle className="text-xl mr-3" />
@@ -180,13 +177,11 @@ export function PageLink() {
         </div>
       )}
 
-      {/* Title and Subtitle in Box */}
       <div className="w-full max-w-md mb-4 bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-700 text-center">
         <h1 className="text-2xl font-bold mb-2">{data?.title || 'Link Page'}</h1>
         <p className="text-base text-gray-300">{data?.subtitle}</p>
       </div>
 
-      {/* Thumbnail Box */}
       {thumbnail && (
         <div className="w-full max-w-md mb-4 bg-gray-800 p-4 rounded-xl shadow-lg border border-purple-700 text-center">
           <h2 className="text-lg font-bold mb-2">Thumbnail</h2>
@@ -200,7 +195,6 @@ export function PageLink() {
 
       {passwordVerified ? (
         <div className="w-full max-w-md space-y-3 bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-700">
-          {/* Social Media Buttons */}
           {socialButtons.map(({ platform, action, url }, index) => {
             const Icon = getIconForAction(platform, action);
             const isActive = index <= activeButtonIndex;
@@ -218,7 +212,7 @@ export function PageLink() {
                   <Icon className="mr-3 text-lg" /> {getButtonText(platform, action)}
                 </div>
                 <button
-                  onClick={() => handleButtonClick(url as string, index, false, socialButtons.length, buttonKey)}
+                  onClick={() => handleButtonClick(url as string, index, false, buttonKey)}
                   disabled={!isActive || state !== 'idle'}
                   className="p-2 rounded-full bg-opacity-20 bg-white hover:bg-opacity-30 focus:outline-none active:scale-90 transition-transform duration-100"
                 >
@@ -234,7 +228,6 @@ export function PageLink() {
             );
           })}
 
-          {/* Target Links */}
           {targetButtons.map(({ action, url }, index) => {
             const isActive = allSocialActionsCompleted;
             const buttonKey = `Target-${action}`;
@@ -251,7 +244,7 @@ export function PageLink() {
                   <FaLink className="mr-3 text-lg" /> {getButtonText('Target', action, data?.buttonName)}
                 </div>
                 <button
-                  onClick={() => handleButtonClick(url as string, index, true, socialButtons.length, buttonKey)}
+                  onClick={() => handleButtonClick(url as string, index, true, buttonKey)}
                   disabled={!isActive || state !== 'idle'}
                   className="p-2 rounded-full bg-opacity-20 bg-white hover:bg-opacity-30 focus:outline-none active:scale-90 transition-transform duration-100"
                 >
@@ -269,7 +262,6 @@ export function PageLink() {
         </div>
       ) : null}
 
-      {/* Updated Password Modal with Blur */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-md flex items-center justify-center">
           <div className="bg-gray-800 p-4 rounded-lg w-full max-w-xs text-center shadow-lg">

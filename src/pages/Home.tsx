@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import {
   FaHeading, FaSubscript, FaTimes,
@@ -21,7 +21,7 @@ import {
   FaCopy
 } from "react-icons/fa";
 import { IconType } from "react-icons";
-import { motion, MotionProps } from "framer-motion";
+import { motion } from "framer-motion";
 
 // API URL and Token
 const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
@@ -459,7 +459,7 @@ const Home: React.FC = () => {
         message: "Link copied to clipboard!",
       });
       setTimeout(() => setModalState({ isOpen: false, type: "", message: "" }), 2000);
-    }).catch((err) => {
+    }).catch(() => {
       setModalState({
         isOpen: true,
         type: "error",
@@ -534,11 +534,11 @@ const Home: React.FC = () => {
   const socialPlatforms = ['YouTube', 'WhatsApp', 'Telegram', 'TikTok', 'Website', 'Instagram', 'Facebook'];
   const socialButtonsPreview = socialPlatforms.flatMap((platform) =>
     formData[platform]
-      ? Object.entries(formData[platform]).map(([action, url]) => ({ platform, action, url: url as string }))
+      ? Object.entries(formData[platform]).map(([action]) => ({ platform, action }))
       : []
   );
   const targetButtonsPreview = formData.targetLinks
-    ? Object.entries(formData.targetLinks).map(([key, url]) => ({ platform: 'Target', action: key, url: url as string }))
+    ? Object.entries(formData.targetLinks).map(([key]) => ({ platform: 'Target', action: key }))
     : [];
   const thumbnail = formData["Advance Option"]?.thumb;
 
@@ -687,7 +687,7 @@ const Home: React.FC = () => {
           )}
 
           <div className="w-full space-y-3">
-            {socialButtonsPreview.map(({ platform, action, url }, index) => {
+            {socialButtonsPreview.map(({ platform, action }) => {
               const Icon = getIconForAction(platform, action);
               return (
                 <div
@@ -705,7 +705,7 @@ const Home: React.FC = () => {
               );
             })}
 
-            {targetButtonsPreview.map(({ action, url }) => (
+            {targetButtonsPreview.map(({ action }) => (
               <div
                 key={`Target-${action}`}
                 className="w-full flex items-center justify-between bg-gray-600 text-white py-3 px-5 rounded-full shadow-md"
