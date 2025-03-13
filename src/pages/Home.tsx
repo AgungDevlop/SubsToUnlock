@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import {
   FaHeading, FaSubscript, FaTimes,
@@ -18,18 +18,34 @@ import {
   FaCalendarAlt,
   FaImage,
   FaArrowRight,
-  FaCopy // Tambahkan ikon copy
+  FaCopy
 } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, MotionProps } from "framer-motion";
 
-// API URL and Token
+// API URL dan Token
 const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 const IMGBB_API_KEY = "54e38a2c97e1a04f6860fb07718272be";
 const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload?expiration=600&key=" + IMGBB_API_KEY;
 
-// Komponen Modal
-const Modal = ({ isOpen, onClose, children }) => {
+// Tipe untuk FormData
+interface FormData {
+  title?: string;
+  subtitle?: string;
+  buttonName?: string;
+  tlink1?: string;
+  targetLinks: { [key: string]: string };
+  [key: string]: any;
+}
+
+// Tipe untuk Modal
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -46,8 +62,28 @@ const Modal = ({ isOpen, onClose, children }) => {
   );
 };
 
-// Komponen AnimatedInput
-const AnimatedInput = ({ icon: Icon, placeholder, onRemove, type = "text", accept, onChange, disabled, value }) => (
+// Tipe untuk AnimatedInput
+interface AnimatedInputProps {
+  icon: React.ElementType;
+  placeholder: string;
+  onRemove?: () => void;
+  type?: string;
+  accept?: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+  value?: string;
+}
+
+const AnimatedInput: React.FC<AnimatedInputProps> = ({ 
+  icon: Icon, 
+  placeholder, 
+  onRemove, 
+  type = "text", 
+  accept, 
+  onChange, 
+  disabled, 
+  value 
+}) => (
   <motion.div
     initial={{ y: 20, opacity: 0 }}
     animate={{ y: 0, opacity: 1 }}
@@ -75,8 +111,24 @@ const AnimatedInput = ({ icon: Icon, placeholder, onRemove, type = "text", accep
   </motion.div>
 );
 
-// Komponen AnimatedButton
-const AnimatedButton = ({ text, icon: Icon, fullWidth = false, onClick, isActive = false, disabled = false }) => (
+// Tipe untuk AnimatedButton
+interface AnimatedButtonProps {
+  text: string;
+  icon?: React.ElementType;
+  fullWidth?: boolean;
+  onClick: () => void;
+  isActive?: boolean;
+  disabled?: boolean;
+}
+
+const AnimatedButton: React.FC<AnimatedButtonProps> = ({ 
+  text, 
+  icon: Icon, 
+  fullWidth = false, 
+  onClick, 
+  isActive = false, 
+  disabled = false 
+}) => (
   <motion.button
     initial={{ scale: 0.95, opacity: 0 }}
     animate={{ scale: 1, opacity: 1 }}
@@ -103,11 +155,30 @@ const AnimatedButton = ({ text, icon: Icon, fullWidth = false, onClick, isActive
   </motion.button>
 );
 
-// Komponen PlatformInputs
-const PlatformInputs = ({ platform, onInputChange, uploadImage }) => {
-  const [selectedOptions, setSelectedOptions] = useState([]);
+// Tipe untuk PlatformInputs
+interface PlatformInputsProps {
+  platform: string;
+  onInputChange: (platform: string, key: string, value: string) => void;
+  uploadImage: (platform: string, key: string, file: File) => void;
+}
 
-  const platformConfigs = {
+const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange, uploadImage }) => {
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+
+  const platformConfigs: { 
+    [key: string]: { 
+      options: string[]; 
+      inputs: { 
+        [key: string]: { 
+          icon: React.ElementType; 
+          placeholder: string; 
+          key: string; 
+          type?: string; 
+          accept?: string 
+        } 
+      } 
+    } 
+  } = {
     YouTube: {
       options: ["Subscribe", "Like", "Comment"],
       inputs: {
@@ -185,13 +256,13 @@ const PlatformInputs = ({ platform, onInputChange, uploadImage }) => {
   const config = platformConfigs[platform] || { options: [], inputs: {} };
   const availableOptions = config.options || [];
 
-  const addOption = (option) => {
+  const addOption = (option: string) => {
     if (option && !selectedOptions.includes(option)) {
       setSelectedOptions([...selectedOptions, option]);
     }
   };
 
-  const removeOption = (option) => {
+  const removeOption = (option: string) => {
     setSelectedOptions(selectedOptions.filter((opt) => opt !== option));
   };
 
@@ -217,7 +288,7 @@ const PlatformInputs = ({ platform, onInputChange, uploadImage }) => {
         ))}
       </select>
       {selectedOptions.map((option) => {
-        const inputConfig = config.inputs[option] || { icon: FaLink, placeholder: "Enter URL" };
+        const inputConfig = config.inputs[option] || { icon: FaLink, placeholder: "Enter URL", key: option.toLowerCase() };
         return (
           <div key={option} className="mb-4">
             <AnimatedInput
@@ -242,19 +313,23 @@ const PlatformInputs = ({ platform, onInputChange, uploadImage }) => {
 };
 
 // Komponen Utama
-const Home = () => {
-  const [activePlatforms, setActivePlatforms] = useState([]);
-  const [formData, setFormData] = useState({ targetLinks: {} });
-  const [loading, setLoading] = useState(false);
-  const [generatedKey, setGeneratedKey] = useState(""); // State untuk menyimpan key
-  const [modalState, setModalState] = useState({
+const Home: React.FC = () => {
+  const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
+  const [formData, setFormData] = useState<FormData>({ targetLinks: {} });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [generatedKey, setGeneratedKey] = useState<string>("");
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: string;
+    message: string;
+  }>({
     isOpen: false,
-    type: "", // "loading", "success", "error"
+    type: "",
     message: "",
   });
-  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState<boolean>(false);
 
-  const socialButtons = [
+  const socialButtons: { text: string; icon: React.ElementType }[] = [
     { text: "YouTube", icon: FaYoutube },
     { text: "WhatsApp", icon: FaWhatsapp },
     { text: "Telegram", icon: FaTelegram },
@@ -266,7 +341,7 @@ const Home = () => {
     { text: "Advance Option", icon: FaLink },
   ];
 
-  const handleInputChange = (platform, key, value) => {
+  const handleInputChange = (platform: string, key: string, value: string) => {
     setFormData((prev) => {
       if (platform === "Target Link") {
         return {
@@ -287,7 +362,7 @@ const Home = () => {
     });
   };
 
-  const handleTopLevelInputChange = (key, value) => {
+  const handleTopLevelInputChange = (key: string, value: string) => {
     setFormData((prev) => {
       if (key === "tlink1") {
         return {
@@ -305,7 +380,7 @@ const Home = () => {
     });
   };
 
-  const uploadImageToImgBB = async (platform, key, file) => {
+  const uploadImageToImgBB = async (platform: string, key: string, file: File) => {
     setModalState({ isOpen: true, type: "loading", message: "Uploading thumbnail..." });
 
     const formDataImgBB = new FormData();
@@ -333,7 +408,7 @@ const Home = () => {
       } else {
         throw new Error(result.error?.message || "Image upload failed");
       }
-    } catch (error) {
+    } catch (error: any) {
       setModalState({
         isOpen: true,
         type: "error",
@@ -344,7 +419,7 @@ const Home = () => {
 
   const generateLink = async () => {
     setLoading(true);
-    setGeneratedKey(""); // Reset key sebelum generate
+    setGeneratedKey("");
 
     try {
       const response = await fetch(API_URL, {
@@ -359,11 +434,11 @@ const Home = () => {
       const result = await response.json();
 
       if (response.ok) {
-        setGeneratedKey(result.key); // Simpan key yang dihasilkan
+        setGeneratedKey(result.key);
       } else {
         throw new Error(result.error || "Failed to generate link");
       }
-    } catch (error) {
+    } catch (error: any) {
       setGeneratedKey("");
       setModalState({
         isOpen: true,
@@ -393,7 +468,7 @@ const Home = () => {
     });
   };
 
-  const togglePlatform = (platform) => {
+  const togglePlatform = (platform: string) => {
     setActivePlatforms((prev) =>
       prev.includes(platform)
         ? prev.filter((p) => p !== platform)
@@ -413,8 +488,8 @@ const Home = () => {
     setPreviewModalOpen(true);
   };
 
-  const getIconForAction = (platform, action) => {
-    const iconMap = {
+  const getIconForAction = (platform: string, action: string): React.ElementType => {
+    const iconMap: { [key: string]: React.ElementType } = {
       'YouTube-subs': FaYoutube,
       'YouTube-like': FaThumbsUp,
       'YouTube-comm': FaComment,
@@ -433,8 +508,8 @@ const Home = () => {
     return iconMap[`${platform}-${action}`] || FaLink;
   };
 
-  const getButtonText = (platform, action, buttonName) => {
-    const textMap = {
+  const getButtonText = (platform: string, action: string, buttonName?: string): string => {
+    const textMap: { [key: string]: string } = {
       'YouTube-subs': 'Subscribe Channel',
       'YouTube-like': 'Like Video',
       'YouTube-comm': 'Comment Video',
@@ -459,8 +534,8 @@ const Home = () => {
   const socialPlatforms = ['YouTube', 'WhatsApp', 'Telegram', 'TikTok', 'Website', 'Instagram', 'Facebook'];
   const socialButtonsPreview = socialPlatforms.flatMap(platform => 
     formData[platform] ? Object.entries(formData[platform]).map(([action, url]) => ({ platform, action, url })) : []
-  );
-  const targetButtonsPreview = formData.targetLinks ? Object.entries(formData.targetLinks).map(([key, url]) => ({ platform: 'Target', action: key, url })) : [];
+  ) as { platform: string; action: string; url: string }[];
+  const targetButtonsPreview = formData.targetLinks ? Object.entries(formData.targetLinks).map(([key, url]) => ({ platform: 'Target', action: key, url })) : [] as { platform: string; action: string; url: string }[];
   const thumbnail = formData["Advance Option"]?.thumb;
 
   return (
@@ -567,7 +642,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Modal untuk Upload */}
       <Modal isOpen={modalState.isOpen} onClose={closeModal}>
         {modalState.type === "loading" && (
           <div className="text-center">
@@ -589,17 +663,14 @@ const Home = () => {
         )}
       </Modal>
 
-      {/* Modal untuk Preview */}
       <Modal isOpen={previewModalOpen} onClose={closePreviewModal}>
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Preview</h2>
-          {/* Title and Subtitle */}
           <div className="w-full mb-4 bg-gray-700 p-4 rounded-xl shadow-lg border border-purple-600 text-center">
             <h1 className="text-xl font-bold mb-2">{formData.title || "Untitled"}</h1>
             <p className="text-base text-gray-300">{formData.subtitle || "No subtitle"}</p>
           </div>
 
-          {/* Thumbnail */}
           {thumbnail && (
             <div className="w-full mb-4 bg-gray-700 p-4 rounded-xl shadow-lg border border-purple-600 text-center">
               <h2 className="text-lg font-bold mb-2">Thumbnail</h2>
@@ -611,7 +682,6 @@ const Home = () => {
             </div>
           )}
 
-          {/* Social Media Buttons */}
           <div className="w-full space-y-3">
             {socialButtonsPreview.map(({ platform, action, url }, index) => {
               const Icon = getIconForAction(platform, action);
@@ -631,23 +701,20 @@ const Home = () => {
               );
             })}
 
-            {/* Target Links */}
-            {targetButtonsPreview.map(({ action, url }) => {
-              return (
-                <div
-                  key={`Target-${action}`}
-                  className="w-full flex items-center justify-between bg-gray-600 text-white py-3 px-5 rounded-full shadow-md"
-                  style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
-                >
-                  <div className="flex items-center">
-                    <FaLink className="mr-3 text-lg" /> {getButtonText('Target', action, formData.buttonName)}
-                  </div>
-                  <div className="p-2 rounded-full bg-opacity-20 bg-white">
-                    <FaArrowRight className="w-5 h-5 text-gray-400" />
-                  </div>
+            {targetButtonsPreview.map(({ action, url }) => (
+              <div
+                key={`Target-${action}`}
+                className="w-full flex items-center justify-between bg-gray-600 text-white py-3 px-5 rounded-full shadow-md"
+                style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
+              >
+                <div className="flex items-center">
+                  <FaLink className="mr-3 text-lg" /> {getButtonText('Target', action, formData.buttonName)}
                 </div>
-              );
-            })}
+                <div className="p-2 rounded-full bg-opacity-20 bg-white">
+                  <FaArrowRight className="w-5 h-5 text-gray-400" />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </Modal>

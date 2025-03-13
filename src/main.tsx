@@ -7,18 +7,17 @@ import Home from "./pages/Home";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AboutUs from "./pages/AboutUs";
-
 import Contact from "./pages/Contact";
-
 import TermsAndConditions from "./pages/TermsAndConditions";
 import { PageLink } from "./pages/PageLink";
 
-// ErrorFallback component with proper typing
+// Tipe untuk ErrorFallbackProps
 interface ErrorFallbackProps {
   error?: Error | null;
   errorInfo?: React.ErrorInfo | null;
 }
 
+// Komponen ErrorFallback
 const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo }) => {
   const routeError = useRouteError() as Error | undefined;
   const displayError = error || routeError;
@@ -51,12 +50,19 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo }) => {
   );
 };
 
-// Define the router
+// Tipe untuk ErrorBoundaryProps
+interface ErrorBoundaryProps {
+  fallback: React.ReactNode;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  children: React.ReactNode;
+}
+
+// Definisikan router
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <ErrorFallback />, // Catches routing errors
+    errorElement: <ErrorFallback />, // Menangani error routing
     children: [
       {
         index: true,
@@ -92,12 +98,12 @@ const router = createBrowserRouter([
   },
 ]);
 
-// Render the app
+// Render aplikasi
 createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ErrorBoundary
       fallback={<ErrorFallback />}
-      onError={(error, errorInfo) => {
+      onError={(error: Error, errorInfo: React.ErrorInfo) => {
         console.error("Error caught by ErrorBoundary:", error, errorInfo);
       }}
     >
