@@ -3,6 +3,7 @@ import { Component, ErrorInfo, ReactNode } from 'react';
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void; // Tambahkan onError
 }
 
 interface State {
@@ -23,11 +24,14 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  // Log the error to an error reporting service or console for debugging
+  // Log the error and call onError if provided
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({ error, errorInfo }); // Simpan error dan errorInfo ke state
+    this.setState({ error, errorInfo });
     console.error('Uncaught error:', error, errorInfo);
-    // Anda bisa mengirim error ke layanan pelaporan error di sini jika ada
+    // Panggil onError jika ada
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
   }
 
   public render() {
