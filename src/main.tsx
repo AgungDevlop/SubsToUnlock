@@ -11,13 +11,12 @@ import Contact from "./pages/Contact";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import { PageLink } from "./pages/PageLink";
 
-// Tipe untuk ErrorFallbackProps
+// ErrorFallback component with proper typing
 interface ErrorFallbackProps {
   error?: Error | null;
   errorInfo?: React.ErrorInfo | null;
 }
 
-// Komponen ErrorFallback
 const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo }) => {
   const routeError = useRouteError() as Error | undefined;
   const displayError = error || routeError;
@@ -50,19 +49,12 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo }) => {
   );
 };
 
-// Tipe untuk ErrorBoundaryProps
-interface ErrorBoundaryProps {
-  fallback: React.ReactNode;
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
-  children: React.ReactNode;
-}
-
-// Definisikan router
+// Define the router
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <ErrorFallback />, // Menangani error routing
+    errorElement: <ErrorFallback />,
     children: [
       {
         index: true,
@@ -98,7 +90,7 @@ const router = createBrowserRouter([
   },
 ]);
 
-// Render aplikasi
+// Render the app
 createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ErrorBoundary

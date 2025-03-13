@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import {
   FaHeading, FaSubscript, FaTimes,
@@ -20,9 +20,10 @@ import {
   FaArrowRight,
   FaCopy
 } from "react-icons/fa";
+import { IconType } from "react-icons";
 import { motion, MotionProps } from "framer-motion";
 
-// API URL dan Token
+// API URL and Token
 const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 const IMGBB_API_KEY = "54e38a2c97e1a04f6860fb07718272be";
@@ -33,7 +34,6 @@ interface FormData {
   title?: string;
   subtitle?: string;
   buttonName?: string;
-  tlink1?: string;
   targetLinks: { [key: string]: string };
   [key: string]: any;
 }
@@ -64,7 +64,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
 
 // Tipe untuk AnimatedInput
 interface AnimatedInputProps {
-  icon: React.ElementType;
+  icon: IconType;
   placeholder: string;
   onRemove?: () => void;
   type?: string;
@@ -74,15 +74,15 @@ interface AnimatedInputProps {
   value?: string;
 }
 
-const AnimatedInput: React.FC<AnimatedInputProps> = ({ 
-  icon: Icon, 
-  placeholder, 
-  onRemove, 
-  type = "text", 
-  accept, 
-  onChange, 
-  disabled, 
-  value 
+const AnimatedInput: React.FC<AnimatedInputProps> = ({
+  icon: Icon,
+  placeholder,
+  onRemove,
+  type = "text",
+  accept,
+  onChange,
+  disabled,
+  value,
 }) => (
   <motion.div
     initial={{ y: 20, opacity: 0 }}
@@ -114,20 +114,20 @@ const AnimatedInput: React.FC<AnimatedInputProps> = ({
 // Tipe untuk AnimatedButton
 interface AnimatedButtonProps {
   text: string;
-  icon?: React.ElementType;
+  icon: IconType;
   fullWidth?: boolean;
   onClick: () => void;
   isActive?: boolean;
   disabled?: boolean;
 }
 
-const AnimatedButton: React.FC<AnimatedButtonProps> = ({ 
-  text, 
-  icon: Icon, 
-  fullWidth = false, 
-  onClick, 
-  isActive = false, 
-  disabled = false 
+const AnimatedButton: React.FC<AnimatedButtonProps> = ({
+  text,
+  icon: Icon,
+  fullWidth = false,
+  onClick,
+  isActive = false,
+  disabled = false,
 }) => (
   <motion.button
     initial={{ scale: 0.95, opacity: 0 }}
@@ -165,19 +165,19 @@ interface PlatformInputsProps {
 const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange, uploadImage }) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
-  const platformConfigs: { 
-    [key: string]: { 
-      options: string[]; 
-      inputs: { 
-        [key: string]: { 
-          icon: React.ElementType; 
-          placeholder: string; 
-          key: string; 
-          type?: string; 
-          accept?: string 
-        } 
-      } 
-    } 
+  const platformConfigs: {
+    [key: string]: {
+      options: string[];
+      inputs: {
+        [key: string]: {
+          icon: IconType;
+          placeholder: string;
+          key: string;
+          type?: string;
+          accept?: string;
+        };
+      };
+    };
   } = {
     YouTube: {
       options: ["Subscribe", "Like", "Comment"],
@@ -242,12 +242,12 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
         Password: { icon: FaLock, placeholder: "Enter Password", key: "pass" },
         Note: { icon: FaStickyNote, placeholder: "Enter Note", key: "note" },
         Expired: { icon: FaCalendarAlt, placeholder: "Select Expiration Date", type: "date", key: "exp" },
-        Thumbnails: { 
-          icon: FaImage, 
-          placeholder: "Upload Thumbnail (Image Only)", 
-          type: "file", 
-          accept: "image/*", 
-          key: "thumb" 
+        Thumbnails: {
+          icon: FaImage,
+          placeholder: "Upload Thumbnail (Image Only)",
+          type: "file",
+          accept: "image/*",
+          key: "thumb",
         },
       },
     },
@@ -320,7 +320,7 @@ const Home: React.FC = () => {
   const [generatedKey, setGeneratedKey] = useState<string>("");
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
-    type: string;
+    type: "" | "loading" | "success" | "error";
     message: string;
   }>({
     isOpen: false,
@@ -329,7 +329,7 @@ const Home: React.FC = () => {
   });
   const [previewModalOpen, setPreviewModalOpen] = useState<boolean>(false);
 
-  const socialButtons: { text: string; icon: React.ElementType }[] = [
+  const socialButtons: { text: string; icon: IconType }[] = [
     { text: "YouTube", icon: FaYoutube },
     { text: "WhatsApp", icon: FaWhatsapp },
     { text: "Telegram", icon: FaTelegram },
@@ -408,11 +408,11 @@ const Home: React.FC = () => {
       } else {
         throw new Error(result.error?.message || "Image upload failed");
       }
-    } catch (error: any) {
+    } catch (error) {
       setModalState({
         isOpen: true,
         type: "error",
-        message: `Error: ${error.message}`,
+        message: `Error: ${(error as Error).message}`,
       });
     }
   };
@@ -438,12 +438,12 @@ const Home: React.FC = () => {
       } else {
         throw new Error(result.error || "Failed to generate link");
       }
-    } catch (error: any) {
+    } catch (error) {
       setGeneratedKey("");
       setModalState({
         isOpen: true,
         type: "error",
-        message: `Error: ${error.message}`,
+        message: `Error: ${(error as Error).message}`,
       });
     } finally {
       setLoading(false);
@@ -488,8 +488,8 @@ const Home: React.FC = () => {
     setPreviewModalOpen(true);
   };
 
-  const getIconForAction = (platform: string, action: string): React.ElementType => {
-    const iconMap: { [key: string]: React.ElementType } = {
+  const getIconForAction = (platform: string, action: string): IconType => {
+    const iconMap: { [key: string]: IconType } = {
       'YouTube-subs': FaYoutube,
       'YouTube-like': FaThumbsUp,
       'YouTube-comm': FaComment,
@@ -532,10 +532,14 @@ const Home: React.FC = () => {
   };
 
   const socialPlatforms = ['YouTube', 'WhatsApp', 'Telegram', 'TikTok', 'Website', 'Instagram', 'Facebook'];
-  const socialButtonsPreview = socialPlatforms.flatMap(platform => 
-    formData[platform] ? Object.entries(formData[platform]).map(([action, url]) => ({ platform, action, url })) : []
-  ) as { platform: string; action: string; url: string }[];
-  const targetButtonsPreview = formData.targetLinks ? Object.entries(formData.targetLinks).map(([key, url]) => ({ platform: 'Target', action: key, url })) : [] as { platform: string; action: string; url: string }[];
+  const socialButtonsPreview = socialPlatforms.flatMap((platform) =>
+    formData[platform]
+      ? Object.entries(formData[platform]).map(([action, url]) => ({ platform, action, url: url as string }))
+      : []
+  );
+  const targetButtonsPreview = formData.targetLinks
+    ? Object.entries(formData.targetLinks).map(([key, url]) => ({ platform: 'Target', action: key, url: url as string }))
+    : [];
   const thumbnail = formData["Advance Option"]?.thumb;
 
   return (
@@ -548,15 +552,15 @@ const Home: React.FC = () => {
       <div className="max-w-3xl mx-auto flex-grow">
         <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-700">
           <div className="mb-6 space-y-4">
-            <AnimatedInput 
-              icon={FaHeading} 
-              placeholder="Enter Title" 
+            <AnimatedInput
+              icon={FaHeading}
+              placeholder="Enter Title"
               onChange={(e) => handleTopLevelInputChange("title", e.target.value)}
               disabled={loading}
             />
-            <AnimatedInput 
-              icon={FaSubscript} 
-              placeholder="Enter Subtitle (optional)" 
+            <AnimatedInput
+              icon={FaSubscript}
+              placeholder="Enter Subtitle (optional)"
               onChange={(e) => handleTopLevelInputChange("subtitle", e.target.value)}
               disabled={loading}
             />
@@ -577,40 +581,40 @@ const Home: React.FC = () => {
           </div>
 
           {activePlatforms.map((platform) => (
-            <PlatformInputs 
-              key={platform} 
-              platform={platform} 
+            <PlatformInputs
+              key={platform}
+              platform={platform}
               onInputChange={handleInputChange}
               uploadImage={uploadImageToImgBB}
             />
           ))}
 
           <div className="space-y-4 mb-6 mt-6">
-            <AnimatedInput 
-              icon={FaLink} 
-              placeholder="Enter Button Name (optional)" 
+            <AnimatedInput
+              icon={FaLink}
+              placeholder="Enter Button Name (optional)"
               onChange={(e) => handleTopLevelInputChange("buttonName", e.target.value)}
               disabled={loading}
             />
-            <AnimatedInput 
-              icon={FaLink} 
-              placeholder="Enter Target Link" 
+            <AnimatedInput
+              icon={FaLink}
+              placeholder="Enter Target Link"
               onChange={(e) => handleTopLevelInputChange("tlink1", e.target.value)}
               disabled={loading}
             />
           </div>
 
           <div className="flex justify-between gap-3">
-            <AnimatedButton 
-              text={loading ? "Generating..." : "Generate Link"} 
-              icon={FaLink} 
-              onClick={generateLink} 
+            <AnimatedButton
+              text={loading ? "Generating..." : "Generate Link"}
+              icon={FaLink}
+              onClick={generateLink}
               disabled={loading}
             />
-            <AnimatedButton 
-              text="Preview" 
-              icon={FaEye} 
-              onClick={showPreview} 
+            <AnimatedButton
+              text="Preview"
+              icon={FaEye}
+              onClick={showPreview}
               disabled={loading}
             />
           </div>
