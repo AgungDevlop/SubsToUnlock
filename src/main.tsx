@@ -4,25 +4,30 @@ import App from "./App";
 import "./index.css";
 import { RouterProvider, createBrowserRouter, useRouteError } from "react-router-dom";
 import Home from "./pages/Home";
-import { Download } from "./pages/Download";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AboutUs from "./pages/AboutUs";
-import TermsAndConditions from "./pages/TermsAndConditions";
-import Disclaimer from "./pages/Disclaimer";
-import { PlayVideo } from "./pages/PlayVideo";
 
-// Komponen ErrorFallback yang menampilkan detail error
-const ErrorFallback: React.FC<{ error?: Error; errorInfo?: React.ErrorInfo }> = ({ error, errorInfo }) => {
-  // Jika digunakan dalam konteks routing, ambil error dari useRouteError
+import Contact from "./pages/Contact";
+
+import TermsAndConditions from "./pages/TermsAndConditions";
+import { PageLink } from "./pages/PageLink";
+
+// ErrorFallback component with proper typing
+interface ErrorFallbackProps {
+  error?: Error | null;
+  errorInfo?: React.ErrorInfo | null;
+}
+
+const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo }) => {
   const routeError = useRouteError() as Error | undefined;
-  const displayError = error || routeError; // Gunakan error dari props atau routeError
+  const displayError = error || routeError;
 
   return (
-    <div className="text-center text-red-500 p-4">
+    <div className="text-center text-red-500 p-4 min-h-screen flex flex-col justify-center items-center bg-gray-900">
       <h1 className="text-2xl font-bold mb-2">Terjadi Kesalahan</h1>
       <p className="mb-2">
-        {displayError?.message || 'Maaf, terjadi kesalahan yang tidak terduga.'}
+        {displayError?.message || "Maaf, terjadi kesalahan yang tidak terduga."}
       </p>
       {displayError && (
         <div className="text-left bg-gray-100 p-4 rounded text-black mb-4 max-w-2xl mx-auto">
@@ -46,25 +51,21 @@ const ErrorFallback: React.FC<{ error?: Error; errorInfo?: React.ErrorInfo }> = 
   );
 };
 
+// Define the router
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <ErrorFallback />, // Untuk error routing
+    errorElement: <ErrorFallback />, // Catches routing errors
     children: [
       {
         index: true,
-        element: <Home />, // Halaman utama dengan UploadVideo
+        element: <Home />,
         errorElement: <ErrorFallback />,
       },
       {
-        path: "download",
-        element: <Download />,
-        errorElement: <ErrorFallback />,
-      },
-      {
-        path: "e/:id",
-        element: <PlayVideo />, // Memutar video berdasarkan short_key
+        path: ":key",
+        element: <PageLink />,
         errorElement: <ErrorFallback />,
       },
       {
@@ -78,22 +79,28 @@ const router = createBrowserRouter([
         errorElement: <ErrorFallback />,
       },
       {
-        path: "terms-and-conditions",
-        element: <TermsAndConditions />,
+        path: "contact",
+        element: <Contact />,
         errorElement: <ErrorFallback />,
       },
       {
-        path: "disclaimer",
-        element: <Disclaimer />,
+        path: "terms-and-conditions",
+        element: <TermsAndConditions />,
         errorElement: <ErrorFallback />,
       },
     ],
   },
 ]);
 
+// Render the app
 createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <ErrorBoundary fallback={<ErrorFallback />}>
+    <ErrorBoundary
+      fallback={<ErrorFallback />}
+      onError={(error, errorInfo) => {
+        console.error("Error caught by ErrorBoundary:", error, errorInfo);
+      }}
+    >
       <RouterProvider router={router} />
     </ErrorBoundary>
   </React.StrictMode>
