@@ -27,7 +27,6 @@ export function PageLink() {
   const [passwordVerified, setPasswordVerified] = useState(false);
   const [buttonStates, setButtonStates] = useState<{ [key: string]: 'idle' | 'loading' | 'completed' }>({});
 
-  
   useEffect(() => {
     const fetchLinkData = async () => {
       setLoading(true);
