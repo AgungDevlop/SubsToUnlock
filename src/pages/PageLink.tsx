@@ -119,7 +119,6 @@ export function PageLink() {
     return iconMap[`${platform}-${action}`] || FaLink;
   };
   
-
   const getButtonText = (platform: string, action: string, buttonName?: string) => {
     const textMap: { [key: string]: string } = {
       'YouTube-subs': 'Subscribe Channel',
