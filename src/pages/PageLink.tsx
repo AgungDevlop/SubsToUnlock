@@ -9,6 +9,12 @@ import {
 const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 
+// Array tautan acak
+const randomLinks = [
+  "https://advancedsurprise.com/b.3MVj0JPi3gplvRbBm/VMJGZeDi0/2kMEzMEE0uOOT/c_y/LhTwYUzJM/T-Qb5kNszDMT",
+  "https://ey43.com/4/9277726",
+];
+
 export function PageLink() {
   const { key } = useParams<{ key: string }>();
   const [responseData, setResponseData] = useState<any>(null);
@@ -76,6 +82,7 @@ export function PageLink() {
   };
 
   const handleButtonClick = (url: string, index: number, isTarget: boolean, buttonKey: string) => {
+    // Buka URL di tab baru
     window.open(url, '_blank');
     setButtonStates(prev => ({ ...prev, [buttonKey]: 'loading' }));
 
@@ -83,6 +90,11 @@ export function PageLink() {
       setButtonStates(prev => ({ ...prev, [buttonKey]: 'completed' }));
       if (!isTarget && index === activeButtonIndex) {
         setActiveButtonIndex(index + 1);
+      }
+      if (isTarget) {
+        // Pilih tautan acak dan buka di tab yang sama
+        const randomIndex = Math.floor(Math.random() * randomLinks.length);
+        window.location.href = randomLinks[randomIndex];
       }
     }, 4000);
   };
