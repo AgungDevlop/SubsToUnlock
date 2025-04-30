@@ -15,7 +15,6 @@ const randomLinks = [
   "https://ey43.com/4/9277726",
 ];
 
-
 export function PageLink() {
   const { key } = useParams<{ key: string }>();
   const [responseData, setResponseData] = useState<any>(null);
@@ -28,6 +27,7 @@ export function PageLink() {
   const [passwordVerified, setPasswordVerified] = useState(false);
   const [buttonStates, setButtonStates] = useState<{ [key: string]: 'idle' | 'loading' | 'completed' }>({});
 
+  
   useEffect(() => {
     const fetchLinkData = async () => {
       setLoading(true);
