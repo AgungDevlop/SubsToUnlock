@@ -15,6 +15,7 @@ const randomLinks = [
   "https://ey43.com/4/9277726",
 ];
 
+
 export function PageLink() {
   const { key } = useParams<{ key: string }>();
   const [responseData, setResponseData] = useState<any>(null);
