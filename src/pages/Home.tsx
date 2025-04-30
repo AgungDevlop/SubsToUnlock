@@ -22,7 +22,7 @@ import {
 } from "react-icons/fa";
 import { IconType } from "react-icons";
 import { motion } from "framer-motion";
-import debounce from "lodash/debounce";
+import debounce from "lodash.debounce";
 
 // API URL and Token
 const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
@@ -284,9 +284,6 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
     },
   };
 
-  const config = platformConfigs[platform] || { options: [], inputs: {} };
-  const availableOptions = config.options || [];
-
   const addOption = (option: string) => {
     if (option && !selectedOptions.includes(option)) {
       setSelectedOptions([...selectedOptions, option]);
@@ -344,6 +341,13 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
   );
 };
 
+// Tipe untuk PlatformConfig
+interface PlatformConfig {
+  [platform: string]: {
+    [key: string]: (value: string) => boolean;
+  };
+}
+
 // Komponen Utama
 const Home: React.FC = () => {
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
@@ -376,7 +380,7 @@ const Home: React.FC = () => {
 
   // Debounced input change handler
   const debouncedInputChange = useCallback(
-    debounce((platform: string, key: string, value: string) => {
+    debounce((platform: keyof PlatformConfig, key: string, value: string) => {
       setFormData((prev) => {
         if (platform === "Target Link") {
           return {
@@ -398,15 +402,46 @@ const Home: React.FC = () => {
 
       // Validate input
       const validateInput = () => {
-        const platformConfig = {
-          YouTube: { subs: isValidUrl, like: isValidUrl, comm: isValidUrl },
-          WhatsApp: { msg: isValidPhoneNumber, grp: isValidUrl },
-          Telegram: { chan: isValidUrl, msg: (v: string) => v.startsWith("@") },
-          TikTok: { flw: (v: string) => !!v, like: isValidUrl },
-          Website: { visit: isValidUrl },
-          Instagram: { flw: (v: string) => !!v, like: isValidUrl },
-          Facebook: { like: isValidUrl, grp: isValidUrl },
-          "Target Link": { tlink2: isValidUrl, tlink3: isValidUrl, tlink4: isValidUrl },
+        const platformConfig: PlatformConfig = {
+          YouTube: { 
+            subs: isValidUrl, 
+            like: isValidUrl, 
+            comm: isValidUrl 
+          },
+          WhatsApp: { 
+            msg: isValidPhoneNumber, 
+            grp: isValidUrl 
+          },
+          Telegram: { 
+            chan: isValidUrl, 
+            msg: (v: string) => v.startsWith("@") 
+          },
+          TikTok: { 
+            flw: (v: string) => !!v, 
+            like: isValidUrl 
+          },
+          Website: { 
+            visit: isValidUrl 
+          },
+          Instagram: { 
+            flw: (v: string) => !!v, 
+            like: isValidUrl 
+          },
+          Facebook: { 
+            like: isValidUrl, 
+            grp: isValidUrl 
+          },
+          "Target Link": { 
+            tlink2: isValidUrl, 
+            tlink3: isValidUrl, 
+            tlink4: isValidUrl 
+          },
+          "Advance Option": {
+            pass: () => true,
+            note: () => true,
+            exp: () => true,
+            thumb: () => true
+          }
         };
 
         const validator = platformConfig[platform]?.[key];
@@ -431,7 +466,7 @@ const Home: React.FC = () => {
   );
 
   const handleInputChange = (platform: string, key: string, value: string) => {
-    debouncedInputChange(platform, key, value);
+    debouncedInputChange(platform as keyof PlatformConfig, key, value);
   };
 
   const handleTopLevelInputChange = (key: string, value: string) => {
