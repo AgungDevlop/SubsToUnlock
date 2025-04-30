@@ -6,7 +6,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       {/* Header */}
       <header className="fixed top-0 left-0 w-full p-4 bg-purple-800 text-white flex items-center justify-between z-50 shadow-lg">
         <div className="flex items-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Subs 4 Unlock</h1>
+          <div className="relative group">
+            <img
+              src="/icon.webp"
+              alt="Subs 4 Unlock Icon"
+              className="w-8 h-8 sm:w-10 sm:h-10 mr-2 object-contain filter drop-shadow-[0_0_1px_rgba(139,92,246,1)] drop-shadow-[0_0_2px_rgba(59,130,246,1)] group-hover:drop-shadow-[0_0_6px_rgba(139,92,246,0.9)] transition-all duration-300"
+            />
+          </div>
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Subs 4 Unlock</h1>
         </div>
         <div className="flex items-center">
           <button
@@ -19,7 +26,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
       </header>
 
-      {/* Main Content */}
+      /* Main Content */
       <main className="flex-1 text-white pt-20 bg-gradient-to-b from-purple-900 to-gray-900">
         {children}
       </main>

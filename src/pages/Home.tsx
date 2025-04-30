@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   FaHeading, FaSubscript, FaTimes,
@@ -22,6 +22,7 @@ import {
 } from "react-icons/fa";
 import { IconType } from "react-icons";
 import { motion } from "framer-motion";
+import debounce from "lodash/debounce";
 
 // API URL and Token
 const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
@@ -35,6 +36,12 @@ const isValidUrl = (url: string): boolean => {
   return urlPattern.test(url);
 };
 
+// Fungsi untuk memvalidasi nomor telepon (untuk WhatsApp)
+const isValidPhoneNumber = (phone: string): boolean => {
+  const phonePattern = /^\+?[1-9]\d{1,14}$/;
+  return phonePattern.test(phone.replace(/\s/g, ""));
+};
+
 // Tipe untuk FormData
 interface FormData {
   title?: string;
@@ -42,6 +49,11 @@ interface FormData {
   buttonName?: string;
   targetLinks: { [key: string]: string };
   [key: string]: any;
+}
+
+// Tipe untuk ErrorState
+interface ErrorState {
+  [key: string]: { [key: string]: string };
 }
 
 // Tipe untuk Modal
@@ -59,8 +71,9 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
         {children}
         <button
           onClick={onClose}
-          className="mt-4 bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-md"
+          className="mt-4 bg-purple-700 hover:bg-purple-600 text-white py-2 px-4 rounded-md relative overflow-hidden group"
         >
+          <span className="absolute inset-0 border-2 border-transparent group-hover:border-gradient-to-r group-hover:from-purple-500 group-hover:to-blue-500 rounded-md" />
           Close
         </button>
       </div>
@@ -78,6 +91,7 @@ interface AnimatedInputProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
   value?: string;
+  error?: string;
 }
 
 const AnimatedInput: React.FC<AnimatedInputProps> = ({
@@ -89,6 +103,7 @@ const AnimatedInput: React.FC<AnimatedInputProps> = ({
   onChange,
   disabled,
   value,
+  error,
 }) => (
   <motion.div
     initial={{ y: 20, opacity: 0 }}
@@ -96,24 +111,31 @@ const AnimatedInput: React.FC<AnimatedInputProps> = ({
     transition={{ duration: 0.5, ease: "easeOut" }}
     className="relative"
   >
-    <Icon className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400" />
-    <input
-      type={type}
-      placeholder={placeholder}
-      accept={accept}
-      onChange={onChange}
-      disabled={disabled}
-      value={value}
-      className="w-full pl-10 pr-10 py-2 bg-gray-700 text-white border border-purple-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-400 disabled:opacity-50"
-    />
-    {onRemove && (
-      <button
-        onClick={onRemove}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-400"
-      >
-        <FaTimes className="w-4 h-4" />
-      </button>
-    )}
+    <div className="relative group">
+      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400" />
+      <input
+        type={type}
+        placeholder={placeholder}
+        accept={accept}
+        onChange={onChange}
+        disabled={disabled}
+        value={value}
+        className={`w-full pl-10 pr-10 py-2 bg-gray-700 text-white border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-400 disabled:opacity-50 transition-all duration-300 ${
+          error
+            ? "border-red-500"
+            : "border-gradient-to-r from-purple-500 to-blue-500 group-hover:shadow-[0_0_10px_rgba(139,92,246,0.5)]"
+        }`}
+      />
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-400"
+        >
+          <FaTimes className="w-4 h-4" />
+        </button>
+      )}
+    </div>
+    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
   </motion.div>
 );
 
@@ -140,7 +162,7 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
     animate={{ scale: 1, opacity: 1 }}
     whileHover={{ scale: disabled ? 1 : 1.05 }}
     transition={{ duration: 0.3, ease: "easeOut" }}
-    className={`${
+    className={`relative group ${
       isActive ? "bg-gray-600 hover:bg-gray-500" : "bg-purple-700 hover:bg-purple-600"
     } text-white font-medium py-2 px-3 rounded-md shadow-sm flex items-center justify-between transition-colors duration-200 text-sm ${
       fullWidth ? "col-span-2 md:col-span-3" : ""
@@ -148,6 +170,7 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
     onClick={onClick}
     disabled={disabled}
   >
+    <span className="absolute inset-0 border-2 border-transparent group-hover:border-gradient-to-r group-hover:from-purple-500 group-hover:to-blue-500 rounded-md transition-all duration-300" />
     <div className="flex items-center">
       {Icon && <Icon className="mr-1.5 w-3 h-3" />} {text}
     </div>
@@ -166,9 +189,10 @@ interface PlatformInputsProps {
   platform: string;
   onInputChange: (platform: string, key: string, value: string) => void;
   uploadImage: (platform: string, key: string, file: File) => void;
+  errors: { [key: string]: string };
 }
 
-const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange, uploadImage }) => {
+const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange, uploadImage, errors }) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   const platformConfigs: {
@@ -181,6 +205,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           key: string;
           type?: string;
           accept?: string;
+          validate?: (value: string) => string | null;
         };
       };
     };
@@ -188,58 +213,58 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
     YouTube: {
       options: ["Subscribe", "Like", "Comment"],
       inputs: {
-        Subscribe: { icon: FaYoutube, placeholder: "Enter YouTube Channel URL", key: "subs" },
-        Like: { icon: FaThumbsUp, placeholder: "Enter YouTube Video URL", key: "like" },
-        Comment: { icon: FaComment, placeholder: "Enter YouTube Video URL", key: "comm" },
+        Subscribe: { icon: FaYoutube, placeholder: "Enter YouTube Channel URL", key: "subs", validate: (value) => (isValidUrl(value) ? null : "Invalid YouTube URL") },
+        Like: { icon: FaThumbsUp, placeholder: "Enter YouTube Video URL", key: "like", validate: (value) => (isValidUrl(value) ? null : "Invalid YouTube URL") },
+        Comment: { icon: FaComment, placeholder: "Enter YouTube Video URL", key: "comm", validate: (value) => (isValidUrl(value) ? null : "Invalid YouTube URL") },
       },
     },
     WhatsApp: {
       options: ["Message", "Group Invite"],
       inputs: {
-        Message: { icon: FaEnvelope, placeholder: "Enter Phone Number", key: "msg" },
-        "Group Invite": { icon: FaUsers, placeholder: "Enter Group Invite Link", key: "grp" },
+        Message: { icon: FaEnvelope, placeholder: "Enter Phone Number", key: "msg", validate: (value) => (isValidPhoneNumber(value) ? null : "Invalid phone number") },
+        "Group Invite": { icon: FaUsers, placeholder: "Enter Group Invite Link", key: "grp", validate: (value) => (isValidUrl(value) ? null : "Invalid WhatsApp group URL") },
       },
     },
     Telegram: {
       options: ["Join Channel", "Message"],
       inputs: {
-        "Join Channel": { icon: FaUsers, placeholder: "Enter Telegram Channel Link", key: "chan" },
-        Message: { icon: FaEnvelope, placeholder: "Enter Telegram Username", key: "msg" },
+        "Join Channel": { icon: FaUsers, placeholder: "Enter Telegram Channel Link", key: "chan", validate: (value) => (isValidUrl(value) ? null : "Invalid Telegram URL") },
+        Message: { icon: FaEnvelope, placeholder: "Enter Telegram Username", key: "msg", validate: (value) => (value.startsWith("@") ? null : "Username must start with @") },
       },
     },
     TikTok: {
       options: ["Follow", "Like Video"],
       inputs: {
-        Follow: { icon: FaTiktok, placeholder: "Enter TikTok Username", key: "flw" },
-        "Like Video": { icon: FaThumbsUp, placeholder: "Enter TikTok Video URL", key: "like" },
+        Follow: { icon: FaTiktok, placeholder: "Enter TikTok Username", key: "flw", validate: (value) => (value ? null : "Username cannot be empty") },
+        "Like Video": { icon: FaThumbsUp, placeholder: "Enter TikTok Video URL", key: "like", validate: (value) => (isValidUrl(value) ? null : "Invalid TikTok URL") },
       },
     },
     Website: {
       options: ["Visit"],
       inputs: {
-        Visit: { icon: FaGlobe, placeholder: "Enter Website URL", key: "visit" },
+        Visit: { icon: FaGlobe, placeholder: "Enter Website URL", key: "visit", validate: (value) => (isValidUrl(value) ? null : "Invalid website URL") },
       },
     },
     Instagram: {
       options: ["Follow", "Like Post"],
       inputs: {
-        Follow: { icon: FaInstagram, placeholder: "Enter Instagram Username", key: "flw" },
-        "Like Post": { icon: FaThumbsUp, placeholder: "Enter Instagram Post URL", key: "like" },
+        Follow: { icon: FaInstagram, placeholder: "Enter Instagram Username", key: "flw", validate: (value) => (value ? null : "Username cannot be empty") },
+        "Like Post": { icon: FaThumbsUp, placeholder: "Enter Instagram Post URL", key: "like", validate: (value) => (isValidUrl(value) ? null : "Invalid Instagram URL") },
       },
     },
     Facebook: {
       options: ["Like Page", "Join Group"],
       inputs: {
-        "Like Page": { icon: FaThumbsUp, placeholder: "Enter Facebook Page URL", key: "like" },
-        "Join Group": { icon: FaUsers, placeholder: "Enter Facebook Group URL", key: "grp" },
+        "Like Page": { icon: FaThumbsUp, placeholder: "Enter Facebook Page URL", key: "like", validate: (value) => (isValidUrl(value) ? null : "Invalid Facebook URL") },
+        "Join Group": { icon: FaUsers, placeholder: "Enter Facebook Group URL", key: "grp", validate: (value) => (isValidUrl(value) ? null : "Invalid Facebook URL") },
       },
     },
     "Target Link": {
       options: ["Link 2", "Link 3", "Link 4"],
       inputs: {
-        "Link 2": { icon: FaLink, placeholder: "Enter Target Link 2 URL", key: "tlink2" },
-        "Link 3": { icon: FaLink, placeholder: "Enter Target Link 3 URL", key: "tlink3" },
-        "Link 4": { icon: FaLink, placeholder: "Enter Target Link 4 URL", key: "tlink4" },
+        "Link 2": { icon: FaLink, placeholder: "Enter Target Link 2 URL", key: "tlink2", validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null) },
+        "Link 3": { icon: FaLink, placeholder: "Enter Target Link 3 URL", key: "tlink3", validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null) },
+        "Link 4": { icon: FaLink, placeholder: "Enter Target Link 4 URL", key: "tlink4", validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null) },
       },
     },
     "Advance Option": {
@@ -284,7 +309,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
       <select
         value=""
         onChange={(e) => addOption(e.target.value)}
-        className="w-full p-2 mb-4 bg-gray-600 text-white border border-purple-500 rounded-md"
+        className="w-full p-2 mb-4 bg-gray-600 text-white border-2 border-gradient-to-r from-purple-500 to-blue-500 rounded-md"
       >
         <option value="">Add an option</option>
         {availableOptions.map((opt) => (
@@ -310,6 +335,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
                 }
               }}
               onRemove={() => removeOption(option)}
+              error={errors[inputConfig.key]}
             />
           </div>
         );
@@ -322,6 +348,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
 const Home: React.FC = () => {
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
   const [formData, setFormData] = useState<FormData>({ targetLinks: {} });
+  const [errors, setErrors] = useState<ErrorState>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [generatedKey, setGeneratedKey] = useState<string>("");
   const [modalState, setModalState] = useState<{
@@ -347,30 +374,77 @@ const Home: React.FC = () => {
     { text: "Advance Option", icon: FaLink },
   ];
 
-  const handleInputChange = (platform: string, key: string, value: string) => {
-    setFormData((prev) => {
-      if (platform === "Target Link") {
+  // Debounced input change handler
+  const debouncedInputChange = useCallback(
+    debounce((platform: string, key: string, value: string) => {
+      setFormData((prev) => {
+        if (platform === "Target Link") {
+          return {
+            ...prev,
+            targetLinks: {
+              ...prev.targetLinks,
+              [key]: value,
+            },
+          };
+        }
         return {
           ...prev,
-          targetLinks: {
-            ...prev.targetLinks,
+          [platform]: {
+            ...(prev[platform] || {}),
             [key]: value,
           },
         };
-      }
-      return {
-        ...prev,
-        [platform]: {
-          ...(prev[platform] || {}),
-          [key]: value,
-        },
+      });
+
+      // Validate input
+      const validateInput = () => {
+        const platformConfig = {
+          YouTube: { subs: isValidUrl, like: isValidUrl, comm: isValidUrl },
+          WhatsApp: { msg: isValidPhoneNumber, grp: isValidUrl },
+          Telegram: { chan: isValidUrl, msg: (v: string) => v.startsWith("@") },
+          TikTok: { flw: (v: string) => !!v, like: isValidUrl },
+          Website: { visit: isValidUrl },
+          Instagram: { flw: (v: string) => !!v, like: isValidUrl },
+          Facebook: { like: isValidUrl, grp: isValidUrl },
+          "Target Link": { tlink2: isValidUrl, tlink3: isValidUrl, tlink4: isValidUrl },
+        };
+
+        const validator = platformConfig[platform]?.[key];
+        if (validator && value && !validator(value)) {
+          return `Invalid ${key} for ${platform}`;
+        }
+        return null;
       };
-    });
+
+      setErrors((prev) => {
+        const error = validateInput();
+        return {
+          ...prev,
+          [platform]: {
+            ...(prev[platform] || {}),
+            [key]: error || "",
+          },
+        };
+      });
+    }, 300),
+    []
+  );
+
+  const handleInputChange = (platform: string, key: string, value: string) => {
+    debouncedInputChange(platform, key, value);
   };
 
   const handleTopLevelInputChange = (key: string, value: string) => {
     setFormData((prev) => {
       if (key === "tlink1") {
+        const error = isValidUrl(value) || !value ? null : "Invalid URL";
+        setErrors((prev) => ({
+          ...prev,
+          targetLinks: {
+            ...prev.targetLinks,
+            [key]: error || "",
+          },
+        }));
         return {
           ...prev,
           targetLinks: {
@@ -440,6 +514,19 @@ const Home: React.FC = () => {
         isOpen: true,
         type: "error",
         message: "Target Link must be a valid URL (e.g., https://example.com)!",
+      });
+      return;
+    }
+
+    // Cek apakah ada error pada input lain
+    const hasErrors = Object.values(errors).some((platformErrors) =>
+      Object.values(platformErrors).some((error) => error)
+    );
+    if (hasErrors) {
+      setModalState({
+        isOpen: true,
+        type: "error",
+        message: "Please fix all input errors before generating!",
       });
       return;
     }
@@ -618,6 +705,7 @@ const Home: React.FC = () => {
               platform={platform}
               onInputChange={handleInputChange}
               uploadImage={uploadImageToImgBB}
+              errors={errors[platform] || {}}
             />
           ))}
 
@@ -634,6 +722,7 @@ const Home: React.FC = () => {
               onChange={(e) => handleTopLevelInputChange("tlink1", e.target.value)}
               disabled={loading}
               value={formData.targetLinks?.tlink1 || ""}
+              error={errors.targetLinks?.tlink1}
             />
           </div>
 
@@ -659,13 +748,13 @@ const Home: React.FC = () => {
               transition={{ duration: 0.5 }}
               className="mt-4 flex items-center"
             >
-              <div className="relative flex-grow">
+              <div className="relative flex-grow group">
                 <FaLink className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400" />
                 <input
                   type="text"
                   value={`${window.location.protocol}//${window.location.hostname}/${generatedKey}`}
                   readOnly
-                  className="w-full pl-10 pr-10 py-2 bg-gray-700 text-white border border-purple-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full pl-10 pr-10 py-2 bg-gray-700 text-white border-2 border-gradient-to-r from-purple-500 to-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 group-hover:shadow-[0_0_10px_rgba(139,92,246,0.5)]"
                 />
                 <button
                   onClick={copyToClipboard}
@@ -725,9 +814,10 @@ const Home: React.FC = () => {
               return (
                 <div
                   key={`${platform}-${action}`}
-                  className="w-full flex items-center justify-between bg-purple-600 text-white py-3 px-5 rounded-full shadow-md"
+                  className="w-full flex items-center justify-between bg-purple-600 text-white py-3 px-5 rounded-full shadow-md relative group"
                   style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
                 >
+                  <span className="absolute inset-0 border-2 border-transparent group-hover:border-gradient-to-r group-hover:from-purple-500 group-hover:to-blue-500 rounded-full transition-all duration-300" />
                   <div className="flex items-center">
                     <Icon className="mr-3 text-lg" /> {getButtonText(platform, action)}
                   </div>
@@ -741,15 +831,16 @@ const Home: React.FC = () => {
             {targetButtonsPreview.map(({ action }) => (
               <div
                 key={`Target-${action}`}
-                className="w-full flex items-center justify-between bg-gray-600 text-white py-3 px-5 rounded-full shadow-md"
+                className="w-full flex items-center justify-between bg-gray-600 text-white py-3 px-5 rounded-full shadow-md relative group"
                 style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
               >
+                <span className="absolute inset-0 border-2 border-transparent group-hover:border-gradient-to-r group-hover:from-purple-500 group-hover:to-blue-500 rounded-full transition-all duration-300" />
                 <div className="flex items-center">
                   <FaLink className="mr-3 text-lg" /> {getButtonText('Target', action, formData.buttonName)}
                 </div>
                 <div className="p-2 rounded-full bg-opacity-20 bg-white">
                   <FaArrowRight className="w-5 h-5 text-gray-400" />
-                </div>
+                  </div>
               </div>
             ))}
           </div>
