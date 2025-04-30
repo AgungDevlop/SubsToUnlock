@@ -398,7 +398,9 @@ const Home: React.FC = () => {
 
       // Validate input
       const validateInput = () => {
-        const platformConfig = {
+        const platformConfig: {
+          [key: string]: { [key: string]: (value: string) => boolean };
+        } = {
           YouTube: { subs: isValidUrl, like: isValidUrl, comm: isValidUrl },
           WhatsApp: { msg: isValidPhoneNumber, grp: isValidUrl },
           Telegram: { chan: isValidUrl, msg: (v: string) => v.startsWith("@") },
@@ -840,7 +842,7 @@ const Home: React.FC = () => {
                 </div>
                 <div className="p-2 rounded-full bg-opacity-20 bg-white">
                   <FaArrowRight className="w-5 h-5 text-gray-400" />
-                  </div>
+                </div>
               </div>
             ))}
           </div>
