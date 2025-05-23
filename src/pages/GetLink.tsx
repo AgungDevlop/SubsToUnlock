@@ -4,13 +4,26 @@ import { FaAngleDoubleRight } from 'react-icons/fa';
 
 // Array tautan acak (sama seperti di PageLink.tsx)
 const randomLinks = [
-  "https://advancedsurprise.com/b.3MVj0JPi3gplvRbBm/VMJGZeDi0/2kMEzMEE0uOOT/c_y/LhTwYUzJM/T-Qbb5kNszDMT",
-  "https://ey43.com/4/9277726",
+  "https://obqj2.com/4/9277726",
+  "https://offensive-beat.com/b.3tV/0pP/3Mp/vabsmOVzJzZcD/0m2fMczqEE0GOoTHc-yNLXT/YrzvMhTfQI5UNpz/Mj",
 ];
 
 export function GetLink() {
   const [targetUrl, setTargetUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Load ad script when component mounts
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://ptichoolsougn.net/401/9372886';
+    script.async = true;
+    document.body.appendChild(script);
+
+    // Cleanup: Remove script when component unmounts
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   useEffect(() => {
     // Ambil URL dari session storage
