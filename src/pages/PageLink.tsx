@@ -11,8 +11,8 @@ const API_TOKEN = "AgungDeveloper";
 
 // Array tautan acak
 const randomLinks = [
-  "https://advancedsurprise.com/b.3MVj0JPi3gplvRbBm/VMJGZeDi0/2kMEzMEE0uOOT/c_y/LhTwYUzJM/T-Qb5kNszDMT",
-  "https://ey43.com/4/9277726",
+  "https://obqj2.com/4/9277726",
+  "https://offensive-beat.com/b.3tV/0pP/3Mp/vabsmOVzJzZcD/0m2fMczqEE0GOoTHc-yNLXT/YrzvMhTfQI5UNpz/Mj",
 ];
 
 export function PageLink() {
@@ -26,6 +26,19 @@ export function PageLink() {
   const [activeButtonIndex, setActiveButtonIndex] = useState(0);
   const [passwordVerified, setPasswordVerified] = useState(false);
   const [buttonStates, setButtonStates] = useState<{ [key: string]: 'idle' | 'loading' | 'completed' }>({});
+
+  // Load ad script when component mounts
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://ptichoolsougn.net/401/9372886';
+    script.async = true;
+    document.body.appendChild(script);
+
+    // Cleanup: Remove script when component unmounts
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchLinkData = async () => {
