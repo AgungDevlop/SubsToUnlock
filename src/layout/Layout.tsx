@@ -27,7 +27,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </header>
 
       /* Main Content */
-      <main className="flex-1 text-white pt-20 bg-gradient-to-b from-purple-900 to-gray-900">
+      <main className="flex-1 text-white pt-20 bg-gradient-to-b to-gray-900">
         {children}
       </main>
     </div>
