@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import {
   FaYoutube, FaTelegram, FaTiktok, FaGlobe,
   FaInstagram, FaFacebook, FaLink, FaLock, FaComment,
-  FaThumbsUp, FaUsers, FaEnvelope, FaArrowRight, FaCheck, FaExclamationTriangle
+  FaThumbsUp, FaUsers, FaEnvelope, FaAngleDoubleRight, FaCheck, FaExclamationTriangle
 } from 'react-icons/fa';
 
 const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
@@ -82,26 +82,35 @@ export function PageLink() {
   };
 
   const handleButtonClick = (url: string, index: number, isTarget: boolean, buttonKey: string) => {
-    // Buka URL di tab baru
-    window.open(url, '_blank');
-    setButtonStates(prev => ({ ...prev, [buttonKey]: 'loading' }));
-
-    setTimeout(() => {
-      setButtonStates(prev => ({ ...prev, [buttonKey]: 'completed' }));
-      if (!isTarget && index === activeButtonIndex) {
-        setActiveButtonIndex(index + 1);
-      }
-      if (isTarget) {
-        // Pilih tautan acak dan buka di tab yang sama
+    if (isTarget) {
+      // Simpan URL target ke session storage
+      sessionStorage.setItem('targetUrl', url);
+      // Buka rute /getlink di tab baru
+      window.open('/getlink', '_blank');
+      // Setelah 2 detik, alihkan tab lama ke tautan acak
+      setTimeout(() => {
         const randomIndex = Math.floor(Math.random() * randomLinks.length);
         window.location.href = randomLinks[randomIndex];
-      }
-    }, 4000);
+      }, 2000);
+    } else {
+      // Untuk tombol sosial, buka URL di tab baru
+      window.open(url, '_blank');
+      setButtonStates(prev => ({ ...prev, [buttonKey]: 'loading' }));
+
+      setTimeout(() => {
+        setButtonStates(prev => ({ ...prev, [buttonKey]: 'completed' }));
+        if (index === activeButtonIndex) {
+          setActiveButtonIndex(index + 1);
+        }
+      }, 4000);
+    }
   };
 
   const getIconForAction = (platform: string, action: string) => {
     const iconMap: { [key: string]: any } = {
-      'YouTube-subs': FaYoutube,
+      'YouTube-subs1': FaYoutube,
+      'YouTube-subs2': FaYoutube,
+      'YouTube-subs3': FaYoutube,
       'YouTube-like': FaThumbsUp,
       'YouTube-comm': FaComment,
       'WhatsApp-grp': FaUsers,
@@ -121,7 +130,9 @@ export function PageLink() {
   
   const getButtonText = (platform: string, action: string, buttonName?: string) => {
     const textMap: { [key: string]: string } = {
-      'YouTube-subs': 'Subscribe Channel',
+      'YouTube-subs1': 'Subscribe Channel',
+      'YouTube-subs2': 'Subscribe Channel',
+      'YouTube-subs3': 'Subscribe Channel',
       'YouTube-like': 'Like Video',
       'YouTube-comm': 'Comment Video',
       'WhatsApp-grp': 'Join Group',
@@ -137,7 +148,7 @@ export function PageLink() {
       'Facebook-grp': 'Join Group',
     };
     if (platform === 'Target') {
-      return `${buttonName || 'Get Link'} ${action.replace('tlink', ' ')}`;
+      return buttonName || 'Get Link';
     }
     return textMap[`${platform}-${action}`] || `${platform} - ${action}`;
   };
@@ -217,11 +228,12 @@ export function PageLink() {
             return (
               <div
                 key={buttonKey}
-                className={`w-full flex items-center justify-between ${buttonColor} text-white py-3 px-5 rounded-full shadow-md transform transition-all hover:scale-105 ${isActive && state === 'idle' ? 'hover:bg-purple-700' : ''}`}
+                className={`w-full flex items-center ${buttonColor} text-white py-3 px-5 rounded-full shadow-md transform transition-all hover:scale-105 ${isActive && state === 'idle' ? 'hover:bg-purple-700' : ''}`}
                 style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
               >
-                <div className="flex items-center">
-                  <Icon className="mr-3 text-lg" /> {getButtonText(platform, action)}
+                <Icon className="mr-3 text-lg" />
+                <div className="flex-1 text-center font-bold" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                  {getButtonText(platform, action)}
                 </div>
                 <button
                   onClick={() => handleButtonClick(url as string, index, false, buttonKey)}
@@ -233,7 +245,7 @@ export function PageLink() {
                   ) : state === 'completed' ? (
                     <FaCheck className="w-5 h-5 text-white" />
                   ) : (
-                    <FaArrowRight className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                    <FaAngleDoubleRight className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                   )}
                 </button>
               </div>
@@ -249,11 +261,12 @@ export function PageLink() {
             return (
               <div
                 key={buttonKey}
-                className={`w-full flex items-center justify-between ${buttonColor} text-white py-3 px-5 rounded-full shadow-md transform transition-all ${isActive && state === 'idle' ? 'hover:bg-green-700' : ''}`}
+                className={`w-full flex items-center ${buttonColor} text-white py-3 px-5 rounded-full shadow-md transform transition-all ${isActive && state === 'idle' ? 'hover:bg-green-700' : ''}`}
                 style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
               >
-                <div className="flex items-center">
-                  <FaLink className="mr-3 text-lg" /> {getButtonText('Target', action, data?.buttonName)}
+                <FaLink className="mr-3 text-lg" />
+                <div className="flex-1 text-center font-bold" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                  {getButtonText('Target', action, data?.buttonName)}
                 </div>
                 <button
                   onClick={() => handleButtonClick(url as string, index, true, buttonKey)}
@@ -265,7 +278,7 @@ export function PageLink() {
                   ) : state === 'completed' ? (
                     <FaCheck className="w-5 h-5 text-white" />
                   ) : (
-                    <FaArrowRight className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                    <FaAngleDoubleRight className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                   )}
                 </button>
               </div>
