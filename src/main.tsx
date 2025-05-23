@@ -10,6 +10,7 @@ import AboutUs from "./pages/AboutUs";
 import Contact from "./pages/Contact";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import { PageLink } from "./pages/PageLink";
+import { GetLink } from "./pages/GetLink";
 
 // ErrorFallback component with proper typing
 interface ErrorFallbackProps {
@@ -84,6 +85,11 @@ const router = createBrowserRouter([
       {
         path: "terms-and-conditions",
         element: <TermsAndConditions />,
+        errorElement: <ErrorFallback />,
+      },
+      {
+        path: "getlink",
+        element: <GetLink />,
         errorElement: <ErrorFallback />,
       },
     ],
