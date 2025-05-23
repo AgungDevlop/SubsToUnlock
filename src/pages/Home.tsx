@@ -27,8 +27,7 @@ import debounce from "lodash/debounce";
 // API URL and Token
 const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
-const IMGBB_API_KEY = "54e38a2c97e1a04f6860fb07718272be";
-const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload?expiration=600&key=" + IMGBB_API_KEY;
+const GITHUB_TOKEN_URL = "https://skinml.agungbot.my.id/";
 
 // Fungsi untuk memvalidasi URL
 const isValidUrl = (url: string): boolean => {
@@ -188,7 +187,7 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
 interface PlatformInputsProps {
   platform: string;
   onInputChange: (platform: string, key: string, value: string) => void;
-  uploadImage: (platform: string, key: string, file: File) => void;
+  uploadImage: (platform: string, key: string, file: File) => Promise<void>;
   errors: { [key: string]: string };
 }
 
@@ -211,9 +210,11 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
     };
   } = {
     YouTube: {
-      options: ["Subscribe", "Like", "Comment"],
+      options: ["Subscribe 1", "Subscribe 2", "Subscribe 3", "Like", "Comment"],
       inputs: {
-        Subscribe: { icon: FaYoutube, placeholder: "Enter YouTube Channel URL", key: "subs", validate: (value) => (isValidUrl(value) ? null : "Invalid YouTube URL") },
+        "Subscribe 1": { icon: FaYoutube, placeholder: "Enter YouTube Channel URL 1", key: "subs1", validate: (value) => (isValidUrl(value) ? null : "Invalid YouTube URL") },
+        "Subscribe 2": { icon: FaYoutube, placeholder: "Enter YouTube Channel URL 2", key: "subs2", validate: (value) => (isValidUrl(value) ? null : "Invalid YouTube URL") },
+        "Subscribe 3": { icon: FaYoutube, placeholder: "Enter YouTube Channel URL 3", key: "subs3", validate: (value) => (isValidUrl(value) ? null : "Invalid YouTube URL") },
         Like: { icon: FaThumbsUp, placeholder: "Enter YouTube Video URL", key: "like", validate: (value) => (isValidUrl(value) ? null : "Invalid YouTube URL") },
         Comment: { icon: FaComment, placeholder: "Enter YouTube Video URL", key: "comm", validate: (value) => (isValidUrl(value) ? null : "Invalid YouTube URL") },
       },
@@ -401,7 +402,7 @@ const Home: React.FC = () => {
         const platformConfig: {
           [key: string]: { [key: string]: (value: string) => boolean };
         } = {
-          YouTube: { subs: isValidUrl, like: isValidUrl, comm: isValidUrl },
+          YouTube: { subs1: isValidUrl, subs2: isValidUrl, subs3: isValidUrl, like: isValidUrl, comm: isValidUrl },
           WhatsApp: { msg: isValidPhoneNumber, grp: isValidUrl },
           Telegram: { chan: isValidUrl, msg: (v: string) => v.startsWith("@") },
           TikTok: { flw: (v: string) => !!v, like: isValidUrl },
@@ -462,34 +463,121 @@ const Home: React.FC = () => {
     });
   };
 
-  const uploadImageToImgBB = async (platform: string, key: string, file: File) => {
-    setModalState({ isOpen: true, type: "loading", message: "Uploading thumbnail..." });
+  const fetchGitHubToken = async (): Promise<string> => {
+    try {
+      const response = await fetch(GITHUB_TOKEN_URL);
+      if (!response.ok) {
+        throw new Error("Failed to fetch GitHub token");
+      }
+      const data = await response.json();
+      return data.githubToken;
+    } catch (error) {
+      throw new Error(`Error fetching GitHub token: ${(error as Error).message}`);
+    }
+  };
 
-    const formDataImgBB = new FormData();
-    formDataImgBB.append("image", file);
+  const checkFolderExists = async (token: string): Promise<boolean> => {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/AgungDevlop/InjectorMl/contents/img`,
+        {
+          headers: {
+            Authorization: `token ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        }
+      );
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
+
+  const createFolder = async (token: string) => {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/AgungDevlop/InjectorMl/contents/img/.gitkeep`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `token ${token}`,
+            Accept: "application/vnd.github.v3+json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: "Create img folder with .gitkeep",
+            content: btoa(""),
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to create img folder");
+      }
+    } catch (error) {
+      throw new Error(`Error creating img folder: ${(error as Error).message}`);
+    }
+  };
+
+  const uploadImageToGitHub = async (platform: string, key: string, file: File): Promise<void> => {
+    setModalState({ isOpen: true, type: "loading", message: "Uploading thumbnail to GitHub..." });
 
     try {
-      const response = await fetch(IMGBB_UPLOAD_URL, {
-        method: "POST",
-        body: formDataImgBB,
-      });
+      // Ambil GitHub token
+      const token = await fetchGitHubToken();
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        const imageUrl = result.data.url;
-        handleInputChange(platform, key, imageUrl);
-        setModalState({
-          isOpen: true,
-          type: "success",
-          message: "Thumbnail uploaded successfully!",
-        });
-        setTimeout(() => {
-          setModalState({ isOpen: false, type: "", message: "" });
-        }, 2000);
-      } else {
-        throw new Error(result.error?.message || "Image upload failed");
+      // Cek apakah folder img ada, jika tidak buat folder
+      const folderExists = await checkFolderExists(token);
+      if (!folderExists) {
+        await createFolder(token);
       }
+
+      // Baca file sebagai base64
+      const reader = new FileReader();
+      const fileContent = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+      const base64Content = fileContent.split(",")[1]; // Ambil bagian base64
+
+      // Nama file unik dengan timestamp
+      const timestamp = Date.now();
+      const fileName = `${timestamp}_${file.name}`;
+      const filePath = `img/${fileName}`;
+
+      // Unggah file ke GitHub
+      const response = await fetch(
+        `https://api.github.com/repos/AgungDevlop/InjectorMl/contents/${filePath}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `token ${token}`,
+            Accept: "application/vnd.github.v3+json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: `Upload thumbnail ${fileName}`,
+            content: base64Content,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to upload image to GitHub");
+      }
+
+      // Buat URL raw untuk gambar
+      const rawUrl = `https://raw.githubusercontent.com/AgungDevlop/InjectorMl/main/${filePath}`;
+      handleInputChange(platform, key, rawUrl);
+
+      setModalState({
+        isOpen: true,
+        type: "success",
+        message: "Thumbnail uploaded successfully to GitHub!",
+      });
+      setTimeout(() => {
+        setModalState({ isOpen: false, type: "", message: "" });
+      }, 2000);
     } catch (error) {
       setModalState({
         isOpen: true,
@@ -611,7 +699,9 @@ const Home: React.FC = () => {
 
   const getIconForAction = (platform: string, action: string): IconType => {
     const iconMap: { [key: string]: IconType } = {
-      'YouTube-subs': FaYoutube,
+      'YouTube-subs1': FaYoutube,
+      'YouTube-subs2': FaYoutube,
+      'YouTube-subs3': FaYoutube,
       'YouTube-like': FaThumbsUp,
       'YouTube-comm': FaComment,
       'WhatsApp-grp': FaUsers,
@@ -631,7 +721,9 @@ const Home: React.FC = () => {
 
   const getButtonText = (platform: string, action: string, buttonName?: string): string => {
     const textMap: { [key: string]: string } = {
-      'YouTube-subs': 'Subscribe Channel',
+      'YouTube-subs1': 'Subscribe Channel',
+      'YouTube-subs2': 'Subscribe Channel',
+      'YouTube-subs3': 'Subscribe Channel',
       'YouTube-like': 'Like Video',
       'YouTube-comm': 'Comment Video',
       'WhatsApp-grp': 'Join Group',
@@ -647,7 +739,7 @@ const Home: React.FC = () => {
       'Facebook-grp': 'Join Group',
     };
     if (platform === 'Target') {
-      return `${buttonName || 'Get Link'} ${action.replace('tlink', ' ')}`;
+      return buttonName || 'Get Link';
     }
     return textMap[`${platform}-${action}`] || `${platform} - ${action}`;
   };
@@ -706,7 +798,7 @@ const Home: React.FC = () => {
               key={platform}
               platform={platform}
               onInputChange={handleInputChange}
-              uploadImage={uploadImageToImgBB}
+              uploadImage={uploadImageToGitHub}
               errors={errors[platform] || {}}
             />
           ))}
@@ -816,12 +908,12 @@ const Home: React.FC = () => {
               return (
                 <div
                   key={`${platform}-${action}`}
-                  className="w-full flex items-center justify-between bg-purple-600 text-white py-3 px-5 rounded-full shadow-md relative group"
+                  className="w-full flex items-center bg-purple-600 text-white py-3 px-5 rounded-full shadow-md relative group"
                   style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
                 >
-                  <span className="absolute inset-0 border-2 border-transparent group-hover:border-gradient-to-r group-hover:from-purple-500 group-hover:to-blue-500 rounded-full transition-all duration-300" />
-                  <div className="flex items-center">
-                    <Icon className="mr-3 text-lg" /> {getButtonText(platform, action)}
+                  <Icon className="mr-3 text-lg" />
+                  <div className="flex-1 text-center">
+                    {getButtonText(platform, action)}
                   </div>
                   <div className="p-2 rounded-full bg-opacity-20 bg-white">
                     <FaArrowRight className="w-5 h-5 text-gray-400" />
@@ -833,12 +925,12 @@ const Home: React.FC = () => {
             {targetButtonsPreview.map(({ action }) => (
               <div
                 key={`Target-${action}`}
-                className="w-full flex items-center justify-between bg-gray-600 text-white py-3 px-5 rounded-full shadow-md relative group"
+                className="w-full flex items-center bg-gray-600 text-white py-3 px-5 rounded-full shadow-md relative group"
                 style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
               >
-                <span className="absolute inset-0 border-2 border-transparent group-hover:border-gradient-to-r group-hover:from-purple-500 group-hover:to-blue-500 rounded-full transition-all duration-300" />
-                <div className="flex items-center">
-                  <FaLink className="mr-3 text-lg" /> {getButtonText('Target', action, formData.buttonName)}
+                <FaLink className="mr-3 text-lg" />
+                <div className="flex-1 text-center">
+                  {getButtonText('Target', action, formData.buttonName)}
                 </div>
                 <div className="p-2 rounded-full bg-opacity-20 bg-white">
                   <FaArrowRight className="w-5 h-5 text-gray-400" />
