@@ -3,16 +3,15 @@ import { useParams } from 'react-router-dom';
 import {
   FaYoutube, FaTelegram, FaTiktok, FaGlobe,
   FaInstagram, FaFacebook, FaLink, FaLock, FaComment,
-  FaThumbsUp, FaUsers, FaEnvelope, FaArrowRight, FaCheck, FaExclamationTriangle
+  FaThumbsUp, FaUsers, FaEnvelope, FaAngleDoubleRight, FaCheck, FaExclamationTriangle
 } from 'react-icons/fa';
 
 const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 
-// Array tautan acak
 const randomLinks = [
-  "https://advancedsurprise.com/b.3MVj0JPi3gplvRbBm/VMJGZeDi0/2kMEzMEE0uOOT/c_y/LhTwYUzJM/T-Qb5kNszDMT",
-  "https://ey43.com/4/9277726",
+  "https://obqj2.com/4/9277726",
+  "https://offensive-beat.com/b.3tV/0pP/3Mp/vabsmOVzJzZcD/0m2fMczqEE0GOoTHc-yNLXT/YrzvMhTfQI5UNpz/Mj",
 ];
 
 export function PageLink() {
@@ -28,6 +27,16 @@ export function PageLink() {
   const [buttonStates, setButtonStates] = useState<{ [key: string]: 'idle' | 'loading' | 'completed' }>({});
 
   useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://ptichoolsougn.net/401/9372886';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchLinkData = async () => {
       setLoading(true);
       setError(null);
@@ -41,7 +50,6 @@ export function PageLink() {
         });
         const result = await response.json();
         setResponseData(result);
-        
         if (result?.data?.data?.["Advance Option"]?.pass) {
           setShowModal(true);
         } else {
@@ -82,64 +90,98 @@ export function PageLink() {
   };
 
   const handleButtonClick = (url: string, index: number, isTarget: boolean, buttonKey: string) => {
-    // Buka URL di tab baru
-    window.open(url, '_blank');
-    setButtonStates(prev => ({ ...prev, [buttonKey]: 'loading' }));
-
-    setTimeout(() => {
-      setButtonStates(prev => ({ ...prev, [buttonKey]: 'completed' }));
-      if (!isTarget && index === activeButtonIndex) {
-        setActiveButtonIndex(index + 1);
-      }
-      if (isTarget) {
-        // Pilih tautan acak dan buka di tab yang sama
+    if (isTarget) {
+      sessionStorage.setItem('targetUrl', url);
+      window.open('/getlink', '_blank');
+      setTimeout(() => {
         const randomIndex = Math.floor(Math.random() * randomLinks.length);
         window.location.href = randomLinks[randomIndex];
-      }
-    }, 4000);
+      }, 2000);
+    } else {
+      window.open(url, '_blank');
+      setButtonStates(prev => ({ ...prev, [buttonKey]: 'loading' }));
+      setTimeout(() => {
+        setButtonStates(prev => ({ ...prev, [buttonKey]: 'completed' }));
+        if (index === activeButtonIndex) {
+          setActiveButtonIndex(index + 1);
+        }
+      }, 4000);
+    }
+  };
+
+  const platformActionText: { [platform: string]: { [baseAction: string]: string } } = {
+    YouTube: {
+      subs: 'Subscribe Channel',
+      like: 'Like Video',
+      comm: 'Comment Video',
+    },
+    WhatsApp: {
+      msg: 'Send Message',
+      grp: 'Join Group',
+    },
+    Telegram: {
+      chan: 'Join Channel',
+      msg: 'Send Message',
+    },
+    TikTok: {
+      flw: 'Follow Account',
+      like: 'Like Video',
+    },
+    Website: {
+      visit: 'Visit Website',
+    },
+    Instagram: {
+      flw: 'Follow Account',
+      like: 'Like Post',
+    },
+    Facebook: {
+      like: 'Like Page',
+      grp: 'Join Group',
+    },
+  };
+
+  const platformActionIcon: { [platform: string]: { [baseAction: string]: any } } = {
+    YouTube: {
+      subs: FaYoutube,
+      like: FaThumbsUp,
+      comm: FaComment,
+    },
+    WhatsApp: {
+      msg: FaEnvelope,
+      grp: FaUsers,
+    },
+    Telegram: {
+      chan: FaTelegram,
+      msg: FaEnvelope,
+    },
+    TikTok: {
+      flw: FaTiktok,
+      like: FaThumbsUp,
+    },
+    Website: {
+      visit: FaGlobe,
+    },
+    Instagram: {
+      flw: FaInstagram,
+      like: FaThumbsUp,
+    },
+    Facebook: {
+      like: FaFacebook,
+      grp: FaUsers,
+    },
+  };
+
+  const getButtonText = (platform: string, action: string, buttonName?: string) => {
+    if (platform === 'Target') {
+      return buttonName || 'Get Link';
+    }
+    const baseAction = action.replace(/\d+$/, '');
+    return platformActionText[platform]?.[baseAction] || `${platform} - ${action}`;
   };
 
   const getIconForAction = (platform: string, action: string) => {
-    const iconMap: { [key: string]: any } = {
-      'YouTube-subs': FaYoutube,
-      'YouTube-like': FaThumbsUp,
-      'YouTube-comm': FaComment,
-      'WhatsApp-grp': FaUsers,
-      'WhatsApp-msg': FaEnvelope,
-      'Telegram-chan': FaTelegram,
-      'Telegram-msg': FaEnvelope,
-      'TikTok-flw': FaTiktok,
-      'TikTok-like': FaThumbsUp,
-      'Website-visit': FaGlobe,
-      'Instagram-flw': FaInstagram,
-      'Instagram-like': FaThumbsUp,
-      'Facebook-like': FaFacebook,
-      'Facebook-grp': FaUsers,
-    };
-    return iconMap[`${platform}-${action}`] || FaLink;
-  };
-  
-  const getButtonText = (platform: string, action: string, buttonName?: string) => {
-    const textMap: { [key: string]: string } = {
-      'YouTube-subs': 'Subscribe Channel',
-      'YouTube-like': 'Like Video',
-      'YouTube-comm': 'Comment Video',
-      'WhatsApp-grp': 'Join Group',
-      'WhatsApp-msg': 'Send Message',
-      'Telegram-chan': 'Join Channel',
-      'Telegram-msg': 'Send Message',
-      'TikTok-flw': 'Follow Account',
-      'TikTok-like': 'Like Video',
-      'Website-visit': 'Visit Website',
-      'Instagram-flw': 'Follow Account',
-      'Instagram-like': 'Like Post',
-      'Facebook-like': 'Like Page',
-      'Facebook-grp': 'Join Group',
-    };
-    if (platform === 'Target') {
-      return `${buttonName || 'Get Link'} ${action.replace('tlink', ' ')}`;
-    }
-    return textMap[`${platform}-${action}`] || `${platform} - ${action}`;
+    const baseAction = action.replace(/\d+$/, '');
+    return platformActionIcon[platform]?.[baseAction] || FaLink;
   };
 
   if (loading) return (
@@ -217,11 +259,12 @@ export function PageLink() {
             return (
               <div
                 key={buttonKey}
-                className={`w-full flex items-center justify-between ${buttonColor} text-white py-3 px-5 rounded-full shadow-md transform transition-all hover:scale-105 ${isActive && state === 'idle' ? 'hover:bg-purple-700' : ''}`}
+                className={`w-full flex items-center ${buttonColor} text-white py-3 px-5 rounded-full shadow-md transform transition-all hover:scale-105 ${isActive && state === 'idle' ? 'hover:bg-purple-700' : ''}`}
                 style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
               >
-                <div className="flex items-center">
-                  <Icon className="mr-3 text-lg" /> {getButtonText(platform, action)}
+                <Icon className="mr-3 text-lg" />
+                <div className="flex-1 text-center font-bold" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                  {getButtonText(platform, action)}
                 </div>
                 <button
                   onClick={() => handleButtonClick(url as string, index, false, buttonKey)}
@@ -233,7 +276,7 @@ export function PageLink() {
                   ) : state === 'completed' ? (
                     <FaCheck className="w-5 h-5 text-white" />
                   ) : (
-                    <FaArrowRight className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                    <FaAngleDoubleRight className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                   )}
                 </button>
               </div>
@@ -249,11 +292,12 @@ export function PageLink() {
             return (
               <div
                 key={buttonKey}
-                className={`w-full flex items-center justify-between ${buttonColor} text-white py-3 px-5 rounded-full shadow-md transform transition-all ${isActive && state === 'idle' ? 'hover:bg-green-700' : ''}`}
+                className={`w-full flex items-center ${buttonColor} text-white py-3 px-5 rounded-full shadow-md transform transition-all ${isActive && state === 'idle' ? 'hover:bg-green-700' : ''}`}
                 style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
               >
-                <div className="flex items-center">
-                  <FaLink className="mr-3 text-lg" /> {getButtonText('Target', action, data?.buttonName)}
+                <FaLink className="mr-3 text-lg" />
+                <div className="flex-1 text-center font-bold" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                  {getButtonText('Target', action, data?.buttonName)}
                 </div>
                 <button
                   onClick={() => handleButtonClick(url as string, index, true, buttonKey)}
@@ -265,7 +309,7 @@ export function PageLink() {
                   ) : state === 'completed' ? (
                     <FaCheck className="w-5 h-5 text-white" />
                   ) : (
-                    <FaArrowRight className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                    <FaAngleDoubleRight className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                   )}
                 </button>
               </div>
