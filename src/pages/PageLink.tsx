@@ -6,7 +6,7 @@ import {
   FaThumbsUp, FaUsers, FaEnvelope, FaAngleDoubleRight, FaCheck, FaExclamationTriangle
 } from 'react-icons/fa';
 
-const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
+const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 
 const randomLinks = [
