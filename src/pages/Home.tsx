@@ -25,7 +25,7 @@ import { motion } from "framer-motion";
 import debounce from "lodash/debounce";
 
 // API URL and Token
-const API_URL = "https://myapi.ytsubunlock.my.id/api.php";
+const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 const GITHUB_TOKEN_URL = "https://skinml.agungbot.my.id/";
 
