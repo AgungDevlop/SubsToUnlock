@@ -52,8 +52,10 @@ const validateTikTokUrl = (url: string): string | null => {
 };
 
 const validateWhatsAppUrl = (url: string): string | null => {
-  const whatsappPattern = /^(https?:\/\/)?(www\.)?(wa\.me|chat\.whatsapp\.com)\/.+/i;
-  return url && !whatsappPattern.test(url) ? "Invalid WhatsApp URL (must be a valid wa.me or chat.whatsapp.com URL)" : null;
+  const whatsappPattern = /^(https?:\/\/)?(www\.)?(wa\.me|chat\.whatsapp\.com|whatsapp\.com\/channel)\/.+/i;
+  return url && !whatsappPattern.test(url)
+    ? "Invalid WhatsApp URL (must be a valid wa.me, chat.whatsapp.com, or whatsapp.com/channel URL)"
+    : null;
 };
 
 // Tipe untuk FormData
