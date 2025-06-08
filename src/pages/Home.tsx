@@ -1,24 +1,14 @@
-import { useState, ChangeEvent, useCallback } from "react";
+import { useState, useEffect, ChangeEvent, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   FaHeading, FaSubscript, FaTimes,
   FaYoutube, FaThumbsUp, FaComment,
   FaWhatsapp, FaUsers, FaEnvelope,
-  FaTelegram,
-  FaTiktok,
-  FaGlobe,
-  FaInstagram,
-  FaFacebook,
-  FaLink,
-  FaPlus,
-  FaMinus,
-  FaEye,
-  FaLock,
-  FaStickyNote,
-  FaCalendarAlt,
-  FaImage,
-  FaArrowRight,
-  FaCopy
+  FaTelegram, FaTiktok, FaGlobe,
+  FaInstagram, FaFacebook, FaLink,
+  FaPlus, FaMinus, FaEye, FaLock,
+  FaStickyNote, FaCalendarAlt, FaImage,
+  FaArrowRight, FaCopy
 } from "react-icons/fa";
 import { IconType } from "react-icons";
 import { motion } from "framer-motion";
@@ -108,6 +98,8 @@ interface AnimatedInputProps {
   disabled?: boolean;
   value?: string;
   error?: string;
+  inputId?: string;
+  suggestions?: string[];
 }
 
 const AnimatedInput: React.FC<AnimatedInputProps> = ({
@@ -120,6 +112,8 @@ const AnimatedInput: React.FC<AnimatedInputProps> = ({
   disabled,
   value,
   error,
+  inputId,
+  suggestions = [],
 }) => (
   <motion.div
     initial={{ y: 20, opacity: 0 }}
@@ -136,12 +130,20 @@ const AnimatedInput: React.FC<AnimatedInputProps> = ({
         onChange={onChange}
         disabled={disabled}
         value={value}
+        list={inputId}
         className={`w-full pl-10 pr-10 py-2 bg-gray-700 text-white border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-400 disabled:opacity-50 transition-all duration-300 ${
           error
             ? "border-red-500"
             : "border-gradient-to-r from-purple-500 to-blue-500 group-hover:shadow-[0_0_10px_rgba(139,92,246,0.5)]"
         }`}
       />
+      {suggestions.length > 0 && (
+        <datalist id={inputId}>
+          {suggestions.map((suggestion, index) => (
+            <option key={index} value={suggestion} />
+          ))}
+        </datalist>
+      )}
       {onRemove && (
         <button
           onClick={onRemove}
@@ -206,9 +208,11 @@ interface PlatformInputsProps {
   onInputChange: (platform: string, key: string, value: string) => void;
   uploadImage: (platform: string, key: string, file: File) => Promise<void>;
   errors: { [key: string]: string };
+  inputHistory: { [key: string]: string[] };
+  addToInputHistory: (key: string, value: string) => void;
 }
 
-const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange, uploadImage, errors }) => {
+const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange, uploadImage, errors, inputHistory, addToInputHistory }) => {
   const [inputCounts, setInputCounts] = useState<{ [key: string]: number }>({});
 
   const platformConfigs: {
@@ -432,11 +436,16 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
               placeholder={inputConfig.placeholder(i)}
               type={inputConfig.type || "text"}
               accept={inputConfig.accept}
+              inputId={`${platform}-${key}`}
+              suggestions={inputHistory[`${platform}-${key}`] || []}
               onChange={(e) => {
                 if (inputConfig.key(0) === "thumb" && e.target.files) {
                   uploadImage(platform, inputConfig.key(0), e.target.files[0]);
                 } else {
                   onInputChange(platform, key, e.target.value);
+                  if (e.target.value) {
+                    addToInputHistory(`${platform}-${key}`, e.target.value);
+                  }
                 }
               }}
               onRemove={platform !== "Advance Option" || inputConfig.type !== "file" ? () => removeOption(option, i) : undefined}
@@ -492,6 +501,7 @@ const Home: React.FC = () => {
     message: "",
   });
   const [previewModalOpen, setPreviewModalOpen] = useState<boolean>(false);
+  const [inputHistory, setInputHistory] = useState<{ [key: string]: string[] }>({});
 
   const socialButtons: { text: string; icon: IconType }[] = [
     { text: "YouTube", icon: FaYoutube },
@@ -504,6 +514,31 @@ const Home: React.FC = () => {
     { text: "Target Link", icon: FaLink },
     { text: "Advance Option", icon: FaLink },
   ];
+
+  // Load input history from localStorage on component mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem("inputHistory");
+    if (savedHistory) {
+      setInputHistory(JSON.parse(savedHistory));
+    }
+  }, []);
+
+  // Save input history to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("inputHistory", JSON.stringify(inputHistory));
+  }, [inputHistory]);
+
+  const addToInputHistory = (key: string, value: string) => {
+    if (!value) return;
+    setInputHistory((prev) => {
+      const existing = prev[key] || [];
+      if (!existing.includes(value)) {
+        const updated = [value, ...existing].slice(0, 5); // Keep only the last 5 entries
+        return { ...prev, [key]: updated };
+      }
+      return prev;
+    });
+  };
 
   // Debounced input change handler
   const debouncedInputChange = useCallback(
@@ -650,6 +685,9 @@ const Home: React.FC = () => {
             [key]: error || "",
           },
         }));
+        if (value) {
+          addToInputHistory(`topLevel-${key}`, value);
+        }
         return {
           ...prev,
           targetLinks: {
@@ -657,6 +695,9 @@ const Home: React.FC = () => {
             [key]: value,
           },
         };
+      }
+      if (value) {
+        addToInputHistory(`topLevel-${key}`, value);
       }
       return {
         ...prev,
@@ -724,29 +765,23 @@ const Home: React.FC = () => {
     setModalState({ isOpen: true, type: "loading", message: "Uploading thumbnail..." });
 
     try {
-      // Ambil GitHub token
       const token = await fetchGitHubToken();
-
-      // Cek apakah folder img ada, jika tidak buat folder
       const folderExists = await checkFolderExists(token);
       if (!folderExists) {
         await createFolder(token);
       }
 
-      // Baca file sebagai base64
       const reader = new FileReader();
       const fileContent = await new Promise<string>((resolve) => {
         reader.onload = () => resolve(reader.result as string);
         reader.readAsDataURL(file);
       });
-      const base64Content = fileContent.split(",")[1]; // Ambil bagian base64
+      const base64Content = fileContent.split(",")[1];
 
-      // Nama file unik dengan timestamp
       const timestamp = Date.now();
       const fileName = `${timestamp}_${file.name}`;
       const filePath = `img/${fileName}`;
 
-      // Unggah file ke GitHub
       const response = await fetch(
         `https://api.github.com/repos/AgungDevlop/InjectorMl/contents/${filePath}`,
         {
@@ -768,7 +803,6 @@ const Home: React.FC = () => {
         throw new Error(errorData.message || "Failed to upload image to GitHub");
       }
 
-      // Buat URL raw untuk gambar
       const rawUrl = `https://raw.githubusercontent.com/AgungDevlop/InjectorMl/main/${filePath}`;
       handleInputChange(platform, key, rawUrl);
 
@@ -790,7 +824,6 @@ const Home: React.FC = () => {
   };
 
   const generateLink = async () => {
-    // Cek apakah tlink1 sudah diisi
     if (!formData.targetLinks?.tlink1) {
       setModalState({
         isOpen: true,
@@ -800,7 +833,6 @@ const Home: React.FC = () => {
       return;
     }
 
-    // Validasi apakah tlink1 adalah URL yang valid
     if (!isValidUrl(formData.targetLinks.tlink1)) {
       setModalState({
         isOpen: true,
@@ -810,7 +842,6 @@ const Home: React.FC = () => {
       return;
     }
 
-    // Cek apakah ada error pada input lain
     const hasErrors = Object.values(errors).some((platformErrors) =>
       Object.values(platformErrors).some((error) => error)
     );
@@ -974,71 +1005,71 @@ const Home: React.FC = () => {
   const getButtonText = (platform: string, action: string, buttonName?: string): string => {
     const textMap: { [key: string]: string } = {
       'YouTube-subs1': 'Subscribe Channel 1',
-        'YouTube-subs2': 'Subscribe Channel 2',
-        'YouTube-subs3': 'Subscribe Channel 3',
-        'YouTube-subs4': 'Subscribe Channel 4',
-        'YouTube-subs5': 'Subscribe Channel 5',
-        'YouTube-like': 'Like Video',
-        'YouTube-comm': 'Comment Video',
-        'WhatsApp-msg1': 'Send Message 1',
-        'WhatsApp-msg2': 'Send Message 2',
-        'WhatsApp-msg3': 'Send Message 3',
-        'WhatsApp-msg4': 'Send Message 4',
-        'WhatsApp-msg5': 'Send Message 5',
-        'WhatsApp-grp1': 'Join Group 1',
-        'WhatsApp-grp2': 'Join Group 2',
-        'WhatsApp-grp3': 'Join Group 3',
-        'WhatsApp-grp4': 'Join Group 4',
-        'WhatsApp-grp5': 'Join Group 5',
-        'Telegram-chan1': 'Join Channel 1',
-        'Telegram-chan2': 'Join Channel 2',
-        'Telegram-chan3': 'Join Channel 3',
-        'Telegram-chan4': 'Join Channel 4',
-        'Telegram-chan5': 'Join Channel 5',
-        'Telegram-msg1': 'Send Message 1',
-        'Telegram-msg2': 'Send Message 2',
-        'Telegram-msg3': 'Send Message 3',
-        'Telegram-msg4': 'Send Message 4',
-        'Telegram-msg5': 'Send Message 5',
-        'TikTok-flw1': 'Follow Account 1',
-        'TikTok-flw2': 'Follow Account 2',
-        'TikTok-flw3': 'Follow Account 3',
-        'TikTok-flw4': 'Follow Account 4',
-        'TikTok-flw5': 'Follow Account 5',
-        'TikTok-like1': 'Like Video 1',
-        'TikTok-like2': 'Like Video 2',
-        'TikTok-like3': 'Like Video 3',
-        'TikTok-like4': 'Like Video 4',
-        'TikTok-like5': 'Like Video 5',
-        'Website-visit1': 'Visit Website 1',
-        'Website-visit2': 'Visit Website 2',
-        'Website-visit3': 'Visit Website 3',
-        'Website-visit4': 'Visit Website 4',
-        'Website-visit5': 'Visit Website 5',
-        'Instagram-flw1': 'Follow Account 1',
-        'Instagram-flw2': 'Follow Account 2',
-        'Instagram-flw3': 'Follow Account 3',
-        'Instagram-flw4': 'Follow Account 4',
-        'Instagram-flw5': 'Follow Account 5',
-        'Instagram-like1': 'Like Post 1',
-        'Instagram-like2': 'Like Post 2',
-        'Instagram-like3': 'Like Post 3',
-        'Instagram-like4': 'Like Post 4',
-        'Instagram-like5': 'Like Post 5',
-        'Facebook-like1': 'Like Page 1',
-        'Facebook-like2': 'Like Page 2',
-        'Facebook-like3': 'Like Page 3',
-        'Facebook-like4': 'Like Page 4',
-        'Facebook-like5': 'Like Page 5',
-        'Facebook-grp1': 'Join Group 1',
-        'Facebook-grp2': 'Join Group 2',
-        'Facebook-grp3': 'Join Group 3',
-        'Facebook-grp4': 'Join Group 4',
-        'Facebook-grp5': 'Join Group 5',
-        'Advance Option-pass': 'Enter Password',
-        'Advance Option-note': 'Add Note',
-        'Advance Option-exp': 'Set Expiration',
-        'Advance Option-thumb': 'View Thumbnail',
+      'YouTube-subs2': 'Subscribe Channel 2',
+      'YouTube-subs3': 'Subscribe Channel 3',
+      'YouTube-subs4': 'Subscribe Channel 4',
+      'YouTube-subs5': 'Subscribe Channel 5',
+      'YouTube-like': 'Like Video',
+      'YouTube-comm': 'Comment Video',
+      'WhatsApp-msg1': 'Send Message 1',
+      'WhatsApp-msg2': 'Send Message 2',
+      'WhatsApp-msg3': 'Send Message 3',
+      'WhatsApp-msg4': 'Send Message 4',
+      'WhatsApp-msg5': 'Send Message 5',
+      'WhatsApp-grp1': 'Join Group 1',
+      'WhatsApp-grp2': 'Join Group 2',
+      'WhatsApp-grp3': 'Join Group 3',
+      'WhatsApp-grp4': 'Join Group 4',
+      'WhatsApp-grp5': 'Join Group 5',
+      'Telegram-chan1': 'Join Channel 1',
+      'Telegram-chan2': 'Join Channel 2',
+      'Telegram-chan3': 'Join Channel 3',
+      'Telegram-chan4': 'Join Channel 4',
+      'Telegram-chan5': 'Join Channel 5',
+      'Telegram-msg1': 'Send Message 1',
+      'Telegram-msg2': 'Send Message 2',
+      'Telegram-msg3': 'Send Message 3',
+      'Telegram-msg4': 'Send Message 4',
+      'Telegram-msg5': 'Send Message 5',
+      'TikTok-flw1': 'Follow Account 1',
+      'TikTok-flw2': 'Follow Account 2',
+      'TikTok-flw3': 'Follow Account 3',
+      'TikTok-flw4': 'Follow Account 4',
+      'TikTok-flw5': 'Follow Account 5',
+      'TikTok-like1': 'Like Video 1',
+      'TikTok-like2': 'Like Video 2',
+      'TikTok-like3': 'Like Video 3',
+      'TikTok-like4': 'Like Video 4',
+      'TikTok-like5': 'Like Video 5',
+      'Website-visit1': 'Visit Website 1',
+      'Website-visit2': 'Visit Website 2',
+      'Website-visit3': 'Visit Website 3',
+      'Website-visit4': 'Visit Website 4',
+      'Website-visit5': 'Visit Website 5',
+      'Instagram-flw1': 'Follow Account 1',
+      'Instagram-flw2': 'Follow Account 2',
+      'Instagram-flw3': 'Follow Account 3',
+      'Instagram-flw4': 'Follow Account 4',
+      'Instagram-flw5': 'Follow Account 5',
+      'Instagram-like1': 'Like Post 1',
+      'Instagram-like2': 'Like Post 2',
+      'Instagram-like3': 'Like Post 3',
+      'Instagram-like4': 'Like Post 4',
+      'Instagram-like5': 'Like Post 5',
+      'Facebook-like1': 'Like Page 1',
+      'Facebook-like2': 'Like Page 2',
+      'Facebook-like3': 'Like Page 3',
+      'Facebook-like4': 'Like Page 4',
+      'Facebook-like5': 'Like Page 5',
+      'Facebook-grp1': 'Join Group 1',
+      'Facebook-grp2': 'Join Group 2',
+      'Facebook-grp3': 'Join Group 3',
+      'Facebook-grp4': 'Join Group 4',
+      'Facebook-grp5': 'Join Group 5',
+      'Advance Option-pass': 'Enter Password',
+      'Advance Option-note': 'Add Note',
+      'Advance Option-exp': 'Set Expiration',
+      'Advance Option-thumb': 'View Thumbnail',
     };
     if (platform === 'Target') {
       return buttonName || `Get Link ${action.replace('tlink', '')}`;
@@ -1070,12 +1101,16 @@ const Home: React.FC = () => {
             <AnimatedInput
               icon={FaHeading}
               placeholder="Enter Title"
+              inputId="title"
+              suggestions={inputHistory["topLevel-title"] || []}
               onChange={(e) => handleTopLevelInputChange("title", e.target.value)}
               disabled={loading}
             />
             <AnimatedInput
               icon={FaSubscript}
               placeholder="Enter Subtitle (optional)"
+              inputId="subtitle"
+              suggestions={inputHistory["topLevel-subtitle"] || []}
               onChange={(e) => handleTopLevelInputChange("subtitle", e.target.value)}
               disabled={loading}
             />
@@ -1102,6 +1137,8 @@ const Home: React.FC = () => {
               onInputChange={handleInputChange}
               uploadImage={uploadImageToGitHub}
               errors={errors[platform] || {}}
+              inputHistory={inputHistory}
+              addToInputHistory={addToInputHistory}
             />
           ))}
 
@@ -1109,12 +1146,16 @@ const Home: React.FC = () => {
             <AnimatedInput
               icon={FaLink}
               placeholder="Enter Button Name (optional)"
+              inputId="buttonName"
+              suggestions={inputHistory["topLevel-buttonName"] || []}
               onChange={(e) => handleTopLevelInputChange("buttonName", e.target.value)}
               disabled={loading}
             />
             <AnimatedInput
               icon={FaLink}
               placeholder="Enter Target Link"
+              inputId="tlink1"
+              suggestions={inputHistory["topLevel-tlink1"] || []}
               onChange={(e) => handleTopLevelInputChange("tlink1", e.target.value)}
               disabled={loading}
               value={formData.targetLinks?.tlink1 || ""}
