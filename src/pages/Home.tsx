@@ -644,12 +644,18 @@ const Home: React.FC = () => {
             },
           };
         }
+
+        // Ensure prevErrors[platform] is an object before spreading
+        const currentPlatformErrors = typeof prevErrors[platform] === 'object' && prevErrors[platform] !== null
+          ? prevErrors[platform] as { [key: string]: string | undefined }
+          : {};
+
         return {
           ...prevErrors,
           [platform]: {
-            ...(typeof prevErrors[platform] === 'object' ? prevErrors[platform] : {}),
+            ...currentPlatformErrors,
             [key]: error || undefined, // Use undefined for no error
-          } as { [key: string]: string | undefined }, // Explicitly cast
+          },
         };
       });
     }, 300),
