@@ -19,9 +19,9 @@ const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 const GITHUB_TOKEN_URL = "https://skinml.agungbot.my.id/";
 
-// Simple URL validation regex
+// Improved URL validation regex
 const isValidUrl = (url: string): boolean => {
-  const urlPattern = /^(https?:\/\/)([\w-]+(\.[\w-]+)+)(\/[\w- ./?%&=]*)?$/i;
+  const urlPattern = /^(https?:\/\/)((?:[\w-]+\.)*[\w-]+\.[a-zA-Z]{2,})(\/[\w@\-._~:/?#[\]@!$&'()*+,;=]*)?$/i;
   return urlPattern.test(url);
 };
 
