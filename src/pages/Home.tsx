@@ -88,7 +88,8 @@ interface FormData {
 
 // Tipe untuk ErrorState
 interface ErrorState {
-  [key: string]: { [key: string]: string } | undefined;
+  [key: string]: { [key: string]: string | undefined } | string | undefined;
+  targetLinks?: { [key: string]: string | undefined };
 }
 
 // Tipe untuk Modal
@@ -236,7 +237,7 @@ interface PlatformInputsProps {
   platform: string;
   onInputChange: (platform: string, key: string, value: string, validator?: (value: string) => string | null) => void;
   uploadImage: (platform: string, key: string, file: File) => Promise<void>;
-  errors: { [key: string]: string };
+  errors: { [key: string]: string | undefined } | undefined;
   inputHistory: { [key: string]: string[] };
   addToInputHistory: (key: string, value: string) => void;
   formData: FormData; // Add formData prop to manage initial values
@@ -511,7 +512,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
                 ((platform !== "Advance Option" && count > 0) || (platform === "Advance Option" && inputConfig.key(0) !== "thumb"))
                 ? () => removeOption(option, i) : undefined
               }
-              error={errors[key]}
+              error={errors?.[key]}
             />
           </div>
         );
@@ -632,23 +633,23 @@ const Home: React.FC = () => {
       });
 
       // Validate input
-      setErrors((prev) => {
+      setErrors((prevErrors) => {
         const error = validator ? validator(value) : null;
         if (platform === "Target Link") {
           return {
-            ...prev,
+            ...prevErrors,
             targetLinks: {
-              ...(prev.targetLinks || {}),
-              [key]: error || "",
+              ...(prevErrors.targetLinks || {}),
+              [key]: error || undefined, // Use undefined for no error
             },
           };
         }
         return {
-          ...prev,
+          ...prevErrors,
           [platform]: {
-            ...(prev[platform] || {}),
-            [key]: error || "",
-          },
+            ...(typeof prevErrors[platform] === 'object' ? prevErrors[platform] : {}),
+            [key]: error || undefined, // Use undefined for no error
+          } as { [key: string]: string | undefined }, // Explicitly cast
         };
       });
     }, 300),
@@ -676,20 +677,20 @@ const Home: React.FC = () => {
       };
     });
 
-    setErrors((prev) => {
+    setErrors((prevErrors) => {
       const error = validator ? validator(value) : null;
       if (key === "tlink1") {
         return {
-          ...prev,
+          ...prevErrors,
           targetLinks: {
-            ...(prev.targetLinks || {}),
-            [key]: error || "",
+            ...(prevErrors.targetLinks || {}),
+            [key]: error || undefined, // Use undefined for no error
           },
         };
       }
       return {
-        ...prev,
-        [key]: error || "", // Top-level errors can be directly on the key if not nested
+        ...prevErrors,
+        [key]: error || undefined, // Use undefined for no error
       };
     });
     if (value) {
@@ -835,9 +836,12 @@ const Home: React.FC = () => {
     }
 
     // Check all nested errors
-    const hasErrors = Object.values(errors).some(platformErrors =>
-      platformErrors && Object.values(platformErrors).some(error => error)
-    );
+    const hasErrors = Object.values(errors).some(platformErrors => {
+      if (typeof platformErrors === 'object' && platformErrors !== null) {
+        return Object.values(platformErrors).some(error => error);
+      }
+      return false;
+    });
 
     if (hasErrors) {
       setModalState({
@@ -1039,7 +1043,7 @@ const Home: React.FC = () => {
               platform={platform}
               onInputChange={handleInputChange}
               uploadImage={uploadImageToGitHub}
-              errors={errors[platform] || {}}
+              errors={errors[platform] as { [key: string]: string | undefined }}
               inputHistory={inputHistory}
               addToInputHistory={addToInputHistory}
               formData={formData} // Pass formData
