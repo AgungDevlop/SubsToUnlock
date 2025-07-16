@@ -20,12 +20,12 @@ const API_TOKEN = "AgungDeveloper";
 const GITHUB_TOKEN_URL = "https://skinml.agungbot.my.id/";
 
 // Fungsi untuk memvalidasi URL umum
-const isValidUrl = (url: string): boolean => {
+const isValidUrl = (url: string): string | null => {
   try {
     new URL(url);
-    return true;
+    return null; // Valid
   } catch (e) {
-    return false;
+    return "Invalid URL format."; // Invalid
   }
 };
 
@@ -82,14 +82,8 @@ interface FormData {
   subtitle?: string;
   buttonName?: string;
   targetLinks: { [key: string]: string };
-  YouTube?: { [key: string]: string };
-  WhatsApp?: { [key: string]: string };
-  Telegram?: { [key: string]: string };
-  TikTok?: { [key: string]: string };
-  Website?: { [key: string]: string };
-  Instagram?: { [key: string]: string };
-  Facebook?: { [key: string]: string };
-  "Advance Option"?: { [key: string]: string };
+  // Add an index signature to allow dynamic access with string keys
+  [key: string]: any;
 }
 
 // Tipe untuk ErrorState
@@ -250,33 +244,6 @@ interface PlatformInputsProps {
 
 const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange, uploadImage, errors, inputHistory, addToInputHistory, formData }) => {
   const [inputCounts, setInputCounts] = useState<{ [key: string]: number }>({});
-
-  useEffect(() => {
-    // Initialize inputCounts based on existing formData
-    const initialCounts: { [key: string]: number } = {};
-    if (formData[platform]) {
-      Object.keys(formData[platform]!).forEach(key => {
-        const optionKeyMatch = key.match(/([a-zA-Z]+)(\d*)/); // e.g., 'subs1' -> 'subs', 'like' -> 'like'
-        if (optionKeyMatch) {
-          let baseOption = optionKeyMatch[1];
-          // Map back to display names in platformConfigs
-          let displayOption = '';
-          for (const opt in platformConfigs[platform]?.inputs) {
-            if (platformConfigs[platform].inputs[opt].key(0).startsWith(baseOption)) {
-              displayOption = opt;
-              break;
-            }
-          }
-
-          if (displayOption) {
-            initialCounts[displayOption] = (initialCounts[displayOption] || 0) + 1;
-          }
-        }
-      });
-    }
-    setInputCounts(initialCounts);
-  }, [formData, platform]);
-
 
   const platformConfigs: {
     [key: string]: {
@@ -453,6 +420,26 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
     },
   };
 
+  useEffect(() => {
+    // Initialize inputCounts based on existing formData
+    const initialCounts: { [key: string]: number } = {};
+    if (formData[platform]) {
+      Object.keys(formData[platform]!).forEach(key => {
+        // Find the corresponding option name in platformConfigs
+        for (const optionName in platformConfigs[platform]?.inputs) {
+          const inputConfig = platformConfigs[platform].inputs[optionName];
+          // Check if the key starts with the base key name (e.g., 'subs' for 'subs1', 'subs2')
+          if (key.startsWith(inputConfig.key(0).replace(/\d+$/, '')) && formData[platform]![key]) {
+            initialCounts[optionName] = (initialCounts[optionName] || 0) + 1;
+            break; // Found the matching option, move to next key
+          }
+        }
+      });
+    }
+    setInputCounts(initialCounts);
+  }, [formData, platform, platformConfigs]);
+
+
   const config = platformConfigs[platform] || { options: [], inputs: {} };
   const availableOptions = config.options || [];
 
@@ -483,7 +470,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
         newCounts[cleanOption] = newCount;
       }
 
-      // Clear the input value from form data
+      // Clear the input value from form data and remove error
       const keyToRemove = platformConfigs[platform].inputs[cleanOption].key(index);
       onInputChange(platform, keyToRemove, ""); // Pass empty string to clear value
       return newCounts;
@@ -518,7 +505,12 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
                   addToInputHistory(`${platform}-${key}`, e.target.value);
                 }
               }}
-              onRemove={inputConfig.type !== "file" || (platform === "Advance Option" && inputConfig.key(0) !== "thumb") ? () => removeOption(option, i) : undefined}
+              onRemove={
+                (inputConfig.type !== "file" || (platform === "Advance Option" && inputConfig.key(0) !== "thumb")) &&
+                // Only allow removal if there are multiple inputs for this option, or it's an advanced option (but not thumbnail)
+                ((platform !== "Advance Option" && count > 0) || (platform === "Advance Option" && inputConfig.key(0) !== "thumb"))
+                ? () => removeOption(option, i) : undefined
+              }
               error={errors[key]}
             />
           </div>
@@ -697,7 +689,7 @@ const Home: React.FC = () => {
       }
       return {
         ...prev,
-        [key]: error || "", // Top-level errors might not be nested, so adjust as needed
+        [key]: error || "", // Top-level errors can be directly on the key if not nested
       };
     });
     if (value) {
@@ -825,7 +817,7 @@ const Home: React.FC = () => {
 
   const generateLink = async () => {
     // Validate top-level target link
-    const targetLinkError = formData.targetLinks?.tlink1 ? isValidUrl(formData.targetLinks.tlink1) ? null : "Target Link must be a valid URL (e.g., https://example.com)." : "Please enter the Target Link before generating!";
+    const targetLinkError = formData.targetLinks?.tlink1 ? isValidUrl(formData.targetLinks.tlink1) : "Please enter the Target Link before generating!";
     if (targetLinkError) {
       setErrors(prev => ({
         ...prev,
