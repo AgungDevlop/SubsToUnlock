@@ -19,13 +19,13 @@ const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 const GITHUB_TOKEN_URL = "https://skinml.agungbot.my.id/";
 
-// Fungsi untuk memvalidasi URL (hanya HTTPS)
-const isValidUrl = (url: string): string | null => {
-  const urlPattern = /^https:\/\/([\w-]+(\.[\w-]+)+)(\/[\w- ./?%&=]*)?$/i;
-  return url && !urlPattern.test(url) ? "Invalid HTTPS URL" : null;
+// Function to validate URL
+const isValidUrl = (url: string): boolean => {
+  const urlPattern = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w- ./?%&=]*)?$/i;
+  return urlPattern.test(url);
 };
 
-// Tipe untuk FormData
+// Types for FormData
 interface FormData {
   title?: string;
   subtitle?: string;
@@ -34,12 +34,12 @@ interface FormData {
   [key: string]: any;
 }
 
-// Tipe untuk ErrorState
+// Types for ErrorState
 interface ErrorState {
   [key: string]: { [key: string]: string };
 }
 
-// Tipe untuk Modal
+// Types for Modal
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -64,7 +64,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   );
 };
 
-// Tipe untuk AnimatedInput
+// Types for AnimatedInput
 interface AnimatedInputProps {
   icon: IconType;
   placeholder: string;
@@ -134,7 +134,7 @@ const AnimatedInput: React.FC<AnimatedInputProps> = ({
   </motion.div>
 );
 
-// Tipe untuk AnimatedButton
+// Types for AnimatedButton
 interface AnimatedButtonProps {
   text: string;
   icon: IconType;
@@ -179,7 +179,7 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
   </motion.button>
 );
 
-// Tipe untuk PlatformInputs
+// Types for PlatformInputs
 interface PlatformInputsProps {
   platform: string;
   onInputChange: (platform: string, key: string, value: string) => void;
@@ -214,19 +214,19 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           icon: FaYoutube,
           placeholder: (index: number) => `Enter YouTube Channel URL ${index + 1}`,
           key: (index: number) => `subs${index + 1}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
         Like: {
           icon: FaThumbsUp,
           placeholder: () => `Enter YouTube Video URL`,
           key: () => `like`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
         Comment: {
           icon: FaComment,
           placeholder: () => `Enter YouTube Video URL`,
           key: () => `comm`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
       },
     },
@@ -235,15 +235,15 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
       inputs: {
         Message: {
           icon: FaEnvelope,
-          placeholder: (index: number) => `Enter WhatsApp Message URL ${index + 1}`,
+          placeholder: (index: number) => `Enter WhatsApp Message URL ${index + 1} (e.g., https://wa.me/...)`,
           key: (index: number) => `msg${index + 1}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
         "Group Invite": {
           icon: FaUsers,
-          placeholder: (index: number) => `Enter WhatsApp Group Invite URL ${index + 1}`,
+          placeholder: (index: number) => `Enter WhatsApp Group Invite URL ${index + 1} (e.g., https://chat.whatsapp.com/...)`,
           key: (index: number) => `grp${index + 1}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
       },
     },
@@ -254,11 +254,13 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           icon: FaUsers,
           placeholder: (index: number) => `Enter Telegram Channel Link ${index + 1}`,
           key: (index: number) => `chan${index + 1}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
         Message: {
           icon: FaEnvelope,
-          placeholder: (index: number) => `Enter Telegram Username ${index + 1}`,
+          placeholder: (
+
+index: number) => `Enter Telegram Username ${index + 1}`,
           key: (index: number) => `msg${index + 1}`,
           validate: (value) => (value.startsWith("@") ? null : "Username must start with @")
         },
@@ -277,7 +279,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           icon: FaThumbsUp,
           placeholder: (index: number) => `Enter TikTok Video URL ${index + 1}`,
           key: (index: number) => `like${index + 1}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
       },
     },
@@ -288,7 +290,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           icon: FaGlobe,
           placeholder: (index: number) => `Enter Website URL ${index + 1}`,
           key: (index: number) => `visit${index + 1}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
       },
     },
@@ -305,7 +307,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           icon: FaThumbsUp,
           placeholder: (index: number) => `Enter Instagram Post URL ${index + 1}`,
           key: (index: number) => `like${index + 1}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
       },
     },
@@ -316,13 +318,13 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           icon: FaThumbsUp,
           placeholder: (index: number) => `Enter Facebook Page URL ${index + 1}`,
           key: (index: number) => `like${index + 1}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
         "Join Group": {
           icon: FaUsers,
           placeholder: (index: number) => `Enter Facebook Group URL ${index + 1}`,
           key: (index: number) => `grp${index + 1}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
       },
     },
@@ -333,7 +335,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           icon: FaLink,
           placeholder: (index: number) => `Enter Target Link ${index + 2} URL`,
           key: (index: number) => `tlink${index + 2}`,
-          validate: isValidUrl
+          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
         },
       },
     },
@@ -461,7 +463,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
   );
 };
 
-// Komponen Utama
+// Main Component
 const Home: React.FC = () => {
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
   const [formData, setFormData] = useState<FormData>({ targetLinks: {} });
@@ -525,7 +527,7 @@ const Home: React.FC = () => {
           return {
             ...prev,
             targetLinks: {
-              ...prev.targetLinks,
+ ...prev.targetLinks,
               [key]: value,
             },
           };
@@ -540,103 +542,109 @@ const Home: React.FC = () => {
       });
 
       // Validate input
-      const platformConfig: {
-        [key: string]: { [key: string]: (value: string) => string | null };
-      } = {
-        YouTube: {
-          subs1: isValidUrl,
-          subs2: isValidUrl,
-          subs3: isValidUrl,
-          subs4: isValidUrl,
-          subs5: isValidUrl,
-          like: isValidUrl,
-          comm: isValidUrl
-        },
-        WhatsApp: {
-          msg1: isValidUrl,
-          msg2: isValidUrl,
-          msg3: isValidUrl,
-          msg4: isValidUrl,
-          msg5: isValidUrl,
-          grp1: isValidUrl,
-          grp2: isValidUrl,
-          grp3: isValidUrl,
-          grp4: isValidUrl,
-          grp5: isValidUrl
-        },
-        Telegram: {
-          chan1: isValidUrl,
-          chan2: isValidUrl,
-          chan3: isValidUrl,
-          chan4: isValidUrl,
-          chan5: isValidUrl,
-          msg1: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-          msg2: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-          msg3: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-          msg4: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-          msg5: (v) => (v.startsWith("@") ? null : "Username must start with @")
-        },
-        TikTok: {
-          flw1: (v) => (v ? null : "Username cannot be empty"),
-          flw2: (v) => (v ? null : "Username cannot be empty"),
-          flw3: (v) => (v ? null : "Username cannot be empty"),
-          flw4: (v) => (v ? null : "Username cannot be empty"),
-          flw5: (v) => (v ? null : "Username cannot be empty"),
-          like1: isValidUrl,
-          like2: isValidUrl,
-          like3: isValidUrl,
-          like4: isValidUrl,
-          like5: isValidUrl
-        },
-        Website: {
-          visit1: isValidUrl,
-          visit2: isValidUrl,
-          visit3: isValidUrl,
-          visit4: isValidUrl,
-          visit5: isValidUrl
-        },
-        Instagram: {
-          flw1: (v) => (v ? null : "Username cannot be empty"),
-          flw2: (v) => (v ? null : "Username cannot be empty"),
-          flw3: (v) => (v ? null : "Username cannot be empty"),
-          flw4: (v) => (v ? null : "Username cannot be empty"),
-          flw5: (v) => (v ? null : "Username cannot be empty"),
-          like1: isValidUrl,
-          like2: isValidUrl,
-          like3: isValidUrl,
-          like4: isValidUrl,
-          like5: isValidUrl
-        },
-        Facebook: {
-          like1: isValidUrl,
-          like2: isValidUrl,
-          like3: isValidUrl,
-          like4: isValidUrl,
-          like5: isValidUrl,
-          grp1: isValidUrl,
-          grp2: isValidUrl,
-          grp3: isValidUrl,
-          grp4: isValidUrl,
-          grp5: isValidUrl
-        },
-        "Target Link": {
-          tlink2: isValidUrl,
-          tlink3: isValidUrl,
-          tlink4: isValidUrl,
-          tlink5: isValidUrl,
-          tlink6: isValidUrl
-        },
+      const validateInput = () => {
+        const platformConfig: {
+          [key: string]: { [key: string]: (value: string) => string | null };
+        } = {
+          YouTube: {
+            subs1: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            subs2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            subs3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            subs4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            subs5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            comm: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null)
+          },
+          WhatsApp: {
+            msg1: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            msg2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            msg3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            msg4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            msg5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp1: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null)
+          },
+          Telegram: {
+            chan1: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            chan2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            chan3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            chan4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            chan5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            msg1: (v) => (v.startsWith("@") ? null : "Username must start with @"),
+            msg2: (v) => (v.startsWith("@") ? null : "Username must start with @"),
+            msg3: (v) => (v.startsWith("@") ? null : "Username must start with @"),
+            msg4: (v) => (v.startsWith("@") ? null : "Username must start with @"),
+            msg5: (v) => (v.startsWith("@") ? null : "Username must start with @")
+          },
+          TikTok: {
+            flw1: (v) => (v ? null : "Username cannot be empty"),
+            flw2: (v) => (v ? null : "Username cannot be empty"),
+            flw3: (v) => (v ? null : "Username cannot be empty"),
+            flw4: (v) => (v ? null : "Username cannot be empty"),
+            flw5: (v) => (v ? null : "Username cannot be empty"),
+            like1: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null)
+          },
+          Website: {
+            visit1: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            visit2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            visit3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            visit4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            visit5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null)
+          },
+          Instagram: {
+            flw1: (v) => (v ? null : "Username cannot be empty"),
+            flw2: (v) => (v ? null : "Username cannot be empty"),
+            flw3: (v) => (v ? null : "Username cannot be empty"),
+            flw4: (v) => (v ? null : "Username cannot be empty"),
+            flw5: (v) => (v ? null : "Username cannot be empty"),
+            like1: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null)
+          },
+          Facebook: {
+            like1: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            like5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp1: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            grp5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null)
+          },
+          "Target Link": {
+            tlink2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            tlink3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            tlink4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            tlink5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
+            tlink6: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null)
+          },
+        };
+
+        const validator = platformConfig[platform]?.[key];
+        return validator ? validator(value) : null;
       };
 
-      const validator = platformConfig[platform]?.[key];
-      const error = validator ? validator(value) : null;
-      setErrors((prev) => ({
-        ...prev,
-        [platform]: {
-          ...(prev[platform] || {}),
-          [key]: error || "",
-        },
-      }));
+      setErrors((prev) => {
+        const error = validateInput();
+        return {
+          ...prev,
+          [platform]: {
+            ...(prev[platform] || {}),
+            [key]: error || "",
+          },
+        };
+      });
     }, 300),
     []
   );
@@ -648,7 +656,7 @@ const Home: React.FC = () => {
   const handleTopLevelInputChange = (key: string, value: string) => {
     setFormData((prev) => {
       if (key === "tlink1") {
-        const error = isValidUrl(value);
+        const error = value && !isValidUrl(value) ? "Invalid URL" : null;
         setErrors((prev) => ({
           ...prev,
           targetLinks: {
@@ -804,11 +812,11 @@ const Home: React.FC = () => {
       return;
     }
 
-    if (isValidUrl(formData.targetLinks.tlink1)) {
+    if (!isValidUrl(formData.targetLinks.tlink1)) {
       setModalState({
         isOpen: true,
         type: "error",
-        message: "Target Link must be a valid HTTPS URL!",
+        message: "Target Link must be a valid URL (e.g., https://example.com)!",
       });
       return;
     }
