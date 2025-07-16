@@ -21,7 +21,7 @@ const GITHUB_TOKEN_URL = "https://skinml.agungbot.my.id/";
 
 // Simple URL validation regex
 const isValidUrl = (url: string): boolean => {
-  const urlPattern = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w- ./?%&=]*)?$/i;
+  const urlPattern = /^(https?:\/\/)([\w-]+(\.[\w-]+)+)(\/[\w- ./?%&=]*)?$/i;
   return urlPattern.test(url);
 };
 
@@ -144,7 +144,6 @@ interface AnimatedButtonProps {
   disabled?: boolean;
 }
 
-
 const AnimatedButton: React.FC<AnimatedButtonProps> = ({
   text,
   icon: Icon,
@@ -261,7 +260,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           icon: FaEnvelope,
           placeholder: (index: number) => `Enter Telegram Username ${index + 1}`,
           key: (index: number) => `msg${index + 1}`,
-          validate: (value) => (value.startsWith("@") ? null : "Username must start with @")
+          validate: (value) => (value && !value.startsWith("@") ? "Username must start with @" : null)
         },
       },
     },
@@ -372,31 +371,31 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
   const availableOptions = config.options || [];
 
   const addOption = (option: string) => {
-    const cleanOption = option.replace("+ ", "").trim();
+    const optionKey = option.replace("+ ", "").trim();
     if (platform !== "Advance Option") {
-      const count = inputCounts[cleanOption] || 0;
+      const count = inputCounts[optionKey] || 0;
       if (count >= 5) return; // Limit 5 inputs per option
       setInputCounts((prev) => ({
         ...prev,
-        [cleanOption]: (prev[cleanOption] || 0) + 1,
+        [optionKey]: (prev[optionKey] || 0) + 1,
       }));
     } else {
-      if (!inputCounts[cleanOption]) {
+      if (!inputCounts[optionKey]) {
         setInputCounts((prev) => ({
           ...prev,
-          [cleanOption]: 1,
+          [optionKey]: 1,
         }));
       }
     }
   };
 
   const removeOption = (option: string, index: number) => {
-    const cleanOption = option.replace("+ ", "").trim();
+    const optionKey = option.replace("+ ", "").trim();
     setInputCounts((prev) => ({
       ...prev,
-      [cleanOption]: (prev[cleanOption] || 1) - 1,
+      [optionKey]: (prev[optionKey] || 1) - 1,
     }));
-    const key = platformConfigs[platform].inputs[cleanOption].key(index);
+    const key = platformConfigs[platform].inputs[optionKey].key(index);
     onInputChange(platform, key, "");
   };
 
@@ -426,7 +425,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
                   }
                 }
               }}
-              onRemove={platform !== "Advance Option" || inputConfig.type !== "file" ? () => removeOption(option, i) : undefined}
+ |              onRemove={platform !== "Advance Option" || inputConfig.type !== "file" ? () => removeOption(option, i) : undefined}
               error={errors[key]}
             />
           </div>
@@ -438,7 +437,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
 
   return (
     <motion.div
-      initial={{ opacity: 0, height: 0 }}
+      initial={{ opacity: 0, height:  remodeling0 }}
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.5 }}
@@ -472,7 +471,7 @@ const Home: React.FC = () => {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: "" | "loading" | "success" | "error";
-    message: string;
+ soaps: string;
   }>({
     isOpen: false,
     type: "",
@@ -572,11 +571,11 @@ const Home: React.FC = () => {
             chan3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
             chan4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
             chan5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
-            msg1: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-            msg2: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-            msg3: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-            msg4: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-            msg5: (v) => (v.startsWith("@") ? null : "Username must start with @")
+            msg1: (v) => (v && !v.startsWith("@") ? "Username must start with @" : null),
+            msg2: (v) => (v && !v.startsWith("@") ? "Username must start with @" : null),
+            msg3: (v) => (v && !v.startsWith("@") ? "Username must start with @" : null),
+            msg4: (v) => (v && !v.startsWith("@") ? "Username must start with @" : null),
+            msg5: (v) => (v && !v.startsWith("@") ? "Username must start with @" : null)
           },
           TikTok: {
             flw1: (v) => (v ? null : "Username cannot be empty"),
