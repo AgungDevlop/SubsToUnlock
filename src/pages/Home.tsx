@@ -425,7 +425,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
                   }
                 }
               }}
- |              onRemove={platform !== "Advance Option" || inputConfig.type !== "file" ? () => removeOption(option, i) : undefined}
+              onRemove={platform !== "Advance Option" || inputConfig.type !== "file" ? () => removeOption(option, i) : undefined}
               error={errors[key]}
             />
           </div>
@@ -437,7 +437,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
 
   return (
     <motion.div
-      initial={{ opacity: 0, height:  remodeling0 }}
+      initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.5 }}
@@ -471,7 +471,7 @@ const Home: React.FC = () => {
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: "" | "loading" | "success" | "error";
- soaps: string;
+    message: string;
   }>({
     isOpen: false,
     type: "",
