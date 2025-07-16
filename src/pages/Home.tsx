@@ -19,33 +19,61 @@ const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 const GITHUB_TOKEN_URL = "https://skinml.agungbot.my.id/";
 
-// Fungsi untuk memvalidasi URL
+// Fungsi untuk memvalidasi URL umum
 const isValidUrl = (url: string): boolean => {
-  const urlPattern = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w- ./?%&=]*)?$/i;
-  return urlPattern.test(url);
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
 };
 
 // Fungsi untuk memvalidasi URL spesifik per platform
 const validateYouTubeUrl = (url: string): string | null => {
-  const youtubePattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(channel\/|watch\?v=|@|c\/|user\/)/i;
-  return url && !youtubePattern.test(url) ? "Invalid YouTube URL (must be a valid YouTube channel or video URL)" : null;
+  const youtubePattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(channel\/|watch\?v=|@|c\/|user\/|playlist\?list=)[a-zA-Z0-9_-]+/i;
+  return url && !youtubePattern.test(url) ? "Invalid YouTube URL. Must be a valid YouTube channel, video, or playlist URL." : null;
 };
 
 const validateFacebookUrl = (url: string): string | null => {
-  const facebookPattern = /^(https?:\/\/)?(www\.)?(facebook\.com|fb\.com)\/([\w.-]+|groups\/)/i;
-  return url && !facebookPattern.test(url) ? "Invalid Facebook URL (must be a valid Facebook page or group URL)" : null;
+  const facebookPattern = /^(https?:\/\/)?(www\.)?(facebook\.com|fb\.com)\/(?!.*\/photo\.php|.*\/posts\/|.*\/videos\/)([\w.-]+|groups\/[a-zA-Z0-9.-]+(\/?))(\/?$)/i;
+  return url && !facebookPattern.test(url) ? "Invalid Facebook URL. Must be a valid Facebook page or group URL." : null;
 };
 
 const validateTikTokUrl = (url: string): string | null => {
-  const tiktokPattern = /^(https?:\/\/)?(www\.)?(tiktok\.com)\/(@[\w.-]+|v\/)/i;
-  return url && !tiktokPattern.test(url) ? "Invalid TikTok URL (must be a valid TikTok profile or video URL)" : null;
+  const tiktokPattern = /^(https?:\/\/)?(www\.)?(tiktok\.com)\/(@[\w.-]+|v\/[a-zA-Z0-9]+)\/?$/i;
+  return url && !tiktokPattern.test(url) ? "Invalid TikTok URL. Must be a valid TikTok profile or video URL." : null;
 };
 
 const validateWhatsAppUrl = (url: string): string | null => {
   const whatsappPattern = /^(https?:\/\/)?(www\.)?(wa\.me|chat\.whatsapp\.com|whatsapp\.com\/channel)\/.+/i;
   return url && !whatsappPattern.test(url)
-    ? "Invalid WhatsApp URL (must be a valid wa.me, chat.whatsapp.com, or whatsapp.com/channel URL)"
+    ? "Invalid WhatsApp URL. Must be a valid wa.me, chat.whatsapp.com, or whatsapp.com/channel URL."
     : null;
+};
+
+const validateTelegramChannelUrl = (url: string): string | null => {
+  const telegramChannelPattern = /^(https?:\/\/)?(t\.me|telegram\.me)\/([a-zA-Z0-9_]+)\/?$/i;
+  return url && !telegramChannelPattern.test(url) ? "Invalid Telegram Channel URL. Must be a valid t.me/@channelname or telegram.me/@channelname URL." : null;
+};
+
+const validateTelegramMessageUsername = (username: string): string | null => {
+  const telegramUsernamePattern = /^@([a-zA-Z0-9_]{5,32})$/;
+  return username && !telegramUsernamePattern.test(username) ? "Invalid Telegram Username. Must start with '@' and contain 5-32 alphanumeric characters or underscores." : null;
+};
+
+const validateInstagramProfileUrl = (url: string): string | null => {
+  const instagramProfilePattern = /^(https?:\/\/)?(www\.)?(instagram\.com)\/([a-zA-Z0-9._]+)\/?$/i;
+  return url && !instagramProfilePattern.test(url) ? "Invalid Instagram Profile URL." : null;
+};
+
+const validateInstagramPostUrl = (url: string): string | null => {
+  const instagramPostPattern = /^(https?:\/\/)?(www\.)?(instagram\.com)\/p\/([a-zA-Z0-9_-]+)\/?$/i;
+  return url && !instagramPostPattern.test(url) ? "Invalid Instagram Post URL." : null;
+};
+
+const validateUsername = (username: string): string | null => {
+  return username && username.trim() !== '' ? null : "Username cannot be empty.";
 };
 
 // Tipe untuk FormData
@@ -54,12 +82,19 @@ interface FormData {
   subtitle?: string;
   buttonName?: string;
   targetLinks: { [key: string]: string };
-  [key: string]: any;
+  YouTube?: { [key: string]: string };
+  WhatsApp?: { [key: string]: string };
+  Telegram?: { [key: string]: string };
+  TikTok?: { [key: string]: string };
+  Website?: { [key: string]: string };
+  Instagram?: { [key: string]: string };
+  Facebook?: { [key: string]: string };
+  "Advance Option"?: { [key: string]: string };
 }
 
 // Tipe untuk ErrorState
 interface ErrorState {
-  [key: string]: { [key: string]: string };
+  [key: string]: { [key: string]: string } | undefined;
 }
 
 // Tipe untuk Modal
@@ -205,15 +240,43 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
 // Tipe untuk PlatformInputs
 interface PlatformInputsProps {
   platform: string;
-  onInputChange: (platform: string, key: string, value: string) => void;
+  onInputChange: (platform: string, key: string, value: string, validator?: (value: string) => string | null) => void;
   uploadImage: (platform: string, key: string, file: File) => Promise<void>;
   errors: { [key: string]: string };
   inputHistory: { [key: string]: string[] };
   addToInputHistory: (key: string, value: string) => void;
+  formData: FormData; // Add formData prop to manage initial values
 }
 
-const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange, uploadImage, errors, inputHistory, addToInputHistory }) => {
+const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange, uploadImage, errors, inputHistory, addToInputHistory, formData }) => {
   const [inputCounts, setInputCounts] = useState<{ [key: string]: number }>({});
+
+  useEffect(() => {
+    // Initialize inputCounts based on existing formData
+    const initialCounts: { [key: string]: number } = {};
+    if (formData[platform]) {
+      Object.keys(formData[platform]!).forEach(key => {
+        const optionKeyMatch = key.match(/([a-zA-Z]+)(\d*)/); // e.g., 'subs1' -> 'subs', 'like' -> 'like'
+        if (optionKeyMatch) {
+          let baseOption = optionKeyMatch[1];
+          // Map back to display names in platformConfigs
+          let displayOption = '';
+          for (const opt in platformConfigs[platform]?.inputs) {
+            if (platformConfigs[platform].inputs[opt].key(0).startsWith(baseOption)) {
+              displayOption = opt;
+              break;
+            }
+          }
+
+          if (displayOption) {
+            initialCounts[displayOption] = (initialCounts[displayOption] || 0) + 1;
+          }
+        }
+      });
+    }
+    setInputCounts(initialCounts);
+  }, [formData, platform]);
+
 
   const platformConfigs: {
     [key: string]: {
@@ -235,20 +298,20 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
       inputs: {
         Subscribe: {
           icon: FaYoutube,
-          placeholder: (index: number) => `Enter YouTube Channel URL ${index + 1}`,
+          placeholder: (index: number) => `Enter YouTube Channel/Video/Playlist URL ${index + 1}`,
           key: (index: number) => `subs${index + 1}`,
           validate: validateYouTubeUrl
         },
         Like: {
           icon: FaThumbsUp,
-          placeholder: () => `Enter YouTube Video URL`,
-          key: () => `like`,
+          placeholder: (index: number) => `Enter YouTube Video URL ${index + 1}`,
+          key: (index: number) => `like${index + 1}`,
           validate: validateYouTubeUrl
         },
         Comment: {
           icon: FaComment,
-          placeholder: () => `Enter YouTube Video URL`,
-          key: () => `comm`,
+          placeholder: (index: number) => `Enter YouTube Video URL ${index + 1}`,
+          key: (index: number) => `comm${index + 1}`,
           validate: validateYouTubeUrl
         },
       },
@@ -275,15 +338,15 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
       inputs: {
         "Join Channel": {
           icon: FaUsers,
-          placeholder: (index: number) => `Enter Telegram Channel Link ${index + 1}`,
+          placeholder: (index: number) => `Enter Telegram Channel Link ${index + 1} (e.g., t.me/channelname)`,
           key: (index: number) => `chan${index + 1}`,
-          validate: (value) => (value && !isValidUrl(value) ? "Invalid Telegram URL" : null)
+          validate: validateTelegramChannelUrl
         },
         Message: {
           icon: FaEnvelope,
-          placeholder: (index: number) => `Enter Telegram Username ${index + 1}`,
+          placeholder: (index: number) => `Enter Telegram Username ${index + 1} (e.g., @username)`,
           key: (index: number) => `msg${index + 1}`,
-          validate: (value) => (value.startsWith("@") ? null : "Username must start with @")
+          validate: validateTelegramMessageUsername
         },
       },
     },
@@ -292,9 +355,9 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
       inputs: {
         Follow: {
           icon: FaTiktok,
-          placeholder: (index: number) => `Enter TikTok Username ${index + 1}`,
+          placeholder: (index: number) => `Enter TikTok Username ${index + 1} (e.g., @username)`,
           key: (index: number) => `flw${index + 1}`,
-          validate: (value) => (value ? null : "Username cannot be empty")
+          validate: validateUsername
         },
         "Like Video": {
           icon: FaThumbsUp,
@@ -311,7 +374,7 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
           icon: FaGlobe,
           placeholder: (index: number) => `Enter Website URL ${index + 1}`,
           key: (index: number) => `visit${index + 1}`,
-          validate: (value) => (value && !isValidUrl(value) ? "Invalid website URL" : null)
+          validate: isValidUrl
         },
       },
     },
@@ -320,15 +383,15 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
       inputs: {
         Follow: {
           icon: FaInstagram,
-          placeholder: (index: number) => `Enter Instagram Username ${index + 1}`,
+          placeholder: (index: number) => `Enter Instagram Profile URL ${index + 1} (e.g., instagram.com/username)`,
           key: (index: number) => `flw${index + 1}`,
-          validate: (value) => (value ? null : "Username cannot be empty")
+          validate: validateInstagramProfileUrl
         },
         "Like Post": {
           icon: FaThumbsUp,
-          placeholder: (index: number) => `Enter Instagram Post URL ${index + 1}`,
+          placeholder: (index: number) => `Enter Instagram Post URL ${index + 1} (e.g., instagram.com/p/...)`,
           key: (index: number) => `like${index + 1}`,
-          validate: (value) => (value && !isValidUrl(value) ? "Invalid Instagram URL" : null)
+          validate: validateInstagramPostUrl
         },
       },
     },
@@ -354,9 +417,9 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
       inputs: {
         Link: {
           icon: FaLink,
-          placeholder: (index: number) => `Enter Target Link ${index + 2} URL`,
+          placeholder: (index: number) => `Enter Target Link ${index + 2} URL`, // Starts from tlink2 for dynamic links
           key: (index: number) => `tlink${index + 2}`,
-          validate: (value) => (value && !isValidUrl(value) ? "Invalid URL" : null)
+          validate: isValidUrl
         },
       },
     },
@@ -395,32 +458,38 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
 
   const addOption = (option: string) => {
     const cleanOption = option.replace("+ ", "").trim();
-    if (platform !== "Advance Option") {
-      const count = inputCounts[cleanOption] || 0;
-      if (count >= 5) return; // Limit 5 inputs per option
-      setInputCounts((prev) => ({
-        ...prev,
-        [cleanOption]: (prev[cleanOption] || 0) + 1,
-      }));
+    const currentCount = inputCounts[cleanOption] || 0;
+
+    if (platform === "Advance Option") {
+      if (currentCount > 0) return; // Only allow one of each advanced option
     } else {
-      if (!inputCounts[cleanOption]) {
-        setInputCounts((prev) => ({
-          ...prev,
-          [cleanOption]: 1,
-        }));
-      }
+      if (currentCount >= 5) return; // Limit 5 inputs per option for social platforms
     }
+
+    setInputCounts((prev) => ({
+      ...prev,
+      [cleanOption]: (prev[cleanOption] || 0) + 1,
+    }));
   };
 
   const removeOption = (option: string, index: number) => {
     const cleanOption = option.replace("+ ", "").trim();
-    setInputCounts((prev) => ({
-      ...prev,
-      [cleanOption]: (prev[cleanOption] || 1) - 1,
-    }));
-    const key = platformConfigs[platform].inputs[cleanOption].key(index);
-    onInputChange(platform, key, "");
+    setInputCounts((prev) => {
+      const newCount = (prev[cleanOption] || 1) - 1;
+      const newCounts = { ...prev };
+      if (newCount <= 0) {
+        delete newCounts[cleanOption];
+      } else {
+        newCounts[cleanOption] = newCount;
+      }
+
+      // Clear the input value from form data
+      const keyToRemove = platformConfigs[platform].inputs[cleanOption].key(index);
+      onInputChange(platform, keyToRemove, ""); // Pass empty string to clear value
+      return newCounts;
+    });
   };
+
 
   const renderInputs = () => {
     const inputs: JSX.Element[] = [];
@@ -429,8 +498,10 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
       for (let i = 0; i < count; i++) {
         const inputConfig = platformConfigs[platform].inputs[option];
         const key = inputConfig.key(i);
+        const currentValue = platform === "Target Link" ? formData.targetLinks?.[key] : formData[platform]?.[key];
+
         inputs.push(
-          <div key={`${option}-${i}`} className="mb-4">
+          <div key={`${platform}-${option}-${i}`} className="mb-4">
             <AnimatedInput
               icon={inputConfig.icon}
               placeholder={inputConfig.placeholder(i)}
@@ -438,17 +509,16 @@ const PlatformInputs: React.FC<PlatformInputsProps> = ({ platform, onInputChange
               accept={inputConfig.accept}
               inputId={`${platform}-${key}`}
               suggestions={inputHistory[`${platform}-${key}`] || []}
+              value={currentValue || ""} // Ensure value is controlled
               onChange={(e) => {
-                if (inputConfig.key(0) === "thumb" && e.target.files) {
-                  uploadImage(platform, inputConfig.key(0), e.target.files[0]);
+                if (inputConfig.type === "file" && e.target.files) {
+                  uploadImage(platform, key, e.target.files[0]);
                 } else {
-                  onInputChange(platform, key, e.target.value);
-                  if (e.target.value) {
-                    addToInputHistory(`${platform}-${key}`, e.target.value);
-                  }
+                  onInputChange(platform, key, e.target.value, inputConfig.validate);
+                  addToInputHistory(`${platform}-${key}`, e.target.value);
                 }
               }}
-              onRemove={platform !== "Advance Option" || inputConfig.type !== "file" ? () => removeOption(option, i) : undefined}
+              onRemove={inputConfig.type !== "file" || (platform === "Advance Option" && inputConfig.key(0) !== "thumb") ? () => removeOption(option, i) : undefined}
               error={errors[key]}
             />
           </div>
@@ -542,122 +612,45 @@ const Home: React.FC = () => {
 
   // Debounced input change handler
   const debouncedInputChange = useCallback(
-    debounce((platform: string, key: string, value: string) => {
+    debounce((platform: string, key: string, value: string, validator?: (value: string) => string | null) => {
       setFormData((prev) => {
+        if (platform === "Target Link") {
+          const newTargetLinks = { ...prev.targetLinks };
+          if (value === "") {
+            delete newTargetLinks[key]; // Remove if empty
+          } else {
+            newTargetLinks[key] = value;
+          }
+          return {
+            ...prev,
+            targetLinks: newTargetLinks,
+          };
+        } else {
+          const newPlatformData = { ...(prev[platform] || {}) };
+          if (value === "") {
+            delete newPlatformData[key]; // Remove if empty
+          } else {
+            newPlatformData[key] = value;
+          }
+          return {
+            ...prev,
+            [platform]: newPlatformData,
+          };
+        }
+      });
+
+      // Validate input
+      setErrors((prev) => {
+        const error = validator ? validator(value) : null;
         if (platform === "Target Link") {
           return {
             ...prev,
             targetLinks: {
-              ...prev.targetLinks,
-              [key]: value,
+              ...(prev.targetLinks || {}),
+              [key]: error || "",
             },
           };
         }
-        return {
-          ...prev,
-          [platform]: {
-            ...(prev[platform] || {}),
-            [key]: value,
-          },
-        };
-      });
-
-      // Validate input
-      const validateInput = () => {
-        const platformConfig: {
-          [key: string]: { [key: string]: (value: string) => string | null };
-        } = {
-          YouTube: {
-            subs1: validateYouTubeUrl,
-            subs2: validateYouTubeUrl,
-            subs3: validateYouTubeUrl,
-            subs4: validateYouTubeUrl,
-            subs5: validateYouTubeUrl,
-            like: validateYouTubeUrl,
-            comm: validateYouTubeUrl
-          },
-          WhatsApp: {
-            msg1: validateWhatsAppUrl,
-            msg2: validateWhatsAppUrl,
-            msg3: validateWhatsAppUrl,
-            msg4: validateWhatsAppUrl,
-            msg5: validateWhatsAppUrl,
-            grp1: validateWhatsAppUrl,
-            grp2: validateWhatsAppUrl,
-            grp3: validateWhatsAppUrl,
-            grp4: validateWhatsAppUrl,
-            grp5: validateWhatsAppUrl
-          },
-          Telegram: {
-            chan1: (v) => (v && !isValidUrl(v) ? "Invalid Telegram URL" : null),
-            chan2: (v) => (v && !isValidUrl(v) ? "Invalid Telegram URL" : null),
-            chan3: (v) => (v && !isValidUrl(v) ? "Invalid Telegram URL" : null),
-            chan4: (v) => (v && !isValidUrl(v) ? "Invalid Telegram URL" : null),
-            chan5: (v) => (v && !isValidUrl(v) ? "Invalid Telegram URL" : null),
-            msg1: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-            msg2: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-            msg3: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-            msg4: (v) => (v.startsWith("@") ? null : "Username must start with @"),
-            msg5: (v) => (v.startsWith("@") ? null : "Username must start with @")
-          },
-          TikTok: {
-            flw1: (v) => (v ? null : "Username cannot be empty"),
-            flw2: (v) => (v ? null : "Username cannot be empty"),
-            flw3: (v) => (v ? null : "Username cannot be empty"),
-            flw4: (v) => (v ? null : "Username cannot be empty"),
-            flw5: (v) => (v ? null : "Username cannot be empty"),
-            like1: validateTikTokUrl,
-            like2: validateTikTokUrl,
-            like3: validateTikTokUrl,
-            like4: validateTikTokUrl,
-            like5: validateTikTokUrl
-          },
-          Website: {
-            visit1: (v) => (v && !isValidUrl(v) ? "Invalid website URL" : null),
-            visit2: (v) => (v && !isValidUrl(v) ? "Invalid website URL" : null),
-            visit3: (v) => (v && !isValidUrl(v) ? "Invalid website URL" : null),
-            visit4: (v) => (v && !isValidUrl(v) ? "Invalid website URL" : null),
-            visit5: (v) => (v && !isValidUrl(v) ? "Invalid website URL" : null)
-          },
-          Instagram: {
-            flw1: (v) => (v ? null : "Username cannot be empty"),
-            flw2: (v) => (v ? null : "Username cannot be empty"),
-            flw3: (v) => (v ? null : "Username cannot be empty"),
-            flw4: (v) => (v ? null : "Username cannot be empty"),
-            flw5: (v) => (v ? null : "Username cannot be empty"),
-            like1: (v) => (v && !isValidUrl(v) ? "Invalid Instagram URL" : null),
-            like2: (v) => (v && !isValidUrl(v) ? "Invalid Instagram URL" : null),
-            like3: (v) => (v && !isValidUrl(v) ? "Invalid Instagram URL" : null),
-            like4: (v) => (v && !isValidUrl(v) ? "Invalid Instagram URL" : null),
-            like5: (v) => (v && !isValidUrl(v) ? "Invalid Instagram URL" : null)
-          },
-          Facebook: {
-            like1: validateFacebookUrl,
-            like2: validateFacebookUrl,
-            like3: validateFacebookUrl,
-            like4: validateFacebookUrl,
-            like5: validateFacebookUrl,
-            grp1: validateFacebookUrl,
-            grp2: validateFacebookUrl,
-            grp3: validateFacebookUrl,
-            grp4: validateFacebookUrl,
-            grp5: validateFacebookUrl
-          },
-          "Target Link": {
-            tlink2: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
-            tlink3: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
-            tlink4: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
-            tlink5: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null),
-            tlink6: (v) => (v && !isValidUrl(v) ? "Invalid URL" : null)
-          },
-        };
-
-        const validator = platformConfig[platform]?.[key];
-        return validator ? validator(value) : null;
-      };
-
-      setErrors((prev) => {
-        const error = validateInput();
         return {
           ...prev,
           [platform]: {
@@ -670,24 +663,13 @@ const Home: React.FC = () => {
     []
   );
 
-  const handleInputChange = (platform: string, key: string, value: string) => {
-    debouncedInputChange(platform, key, value);
+  const handleInputChange = (platform: string, key: string, value: string, validator?: (value: string) => string | null) => {
+    debouncedInputChange(platform, key, value, validator);
   };
 
-  const handleTopLevelInputChange = (key: string, value: string) => {
+  const handleTopLevelInputChange = (key: string, value: string, validator?: (value: string) => string | null) => {
     setFormData((prev) => {
       if (key === "tlink1") {
-        const error = value && !isValidUrl(value) ? "Invalid URL" : null;
-        setErrors((prev) => ({
-          ...prev,
-          targetLinks: {
-            ...prev.targetLinks,
-            [key]: error || "",
-          },
-        }));
-        if (value) {
-          addToInputHistory(`topLevel-${key}`, value);
-        }
         return {
           ...prev,
           targetLinks: {
@@ -696,15 +678,33 @@ const Home: React.FC = () => {
           },
         };
       }
-      if (value) {
-        addToInputHistory(`topLevel-${key}`, value);
-      }
       return {
         ...prev,
         [key]: value,
       };
     });
+
+    setErrors((prev) => {
+      const error = validator ? validator(value) : null;
+      if (key === "tlink1") {
+        return {
+          ...prev,
+          targetLinks: {
+            ...(prev.targetLinks || {}),
+            [key]: error || "",
+          },
+        };
+      }
+      return {
+        ...prev,
+        [key]: error || "", // Top-level errors might not be nested, so adjust as needed
+      };
+    });
+    if (value) {
+      addToInputHistory(`topLevel-${key}`, value);
+    }
   };
+
 
   const fetchGitHubToken = async (): Promise<string> => {
     try {
@@ -804,7 +804,7 @@ const Home: React.FC = () => {
       }
 
       const rawUrl = `https://raw.githubusercontent.com/AgungDevlop/InjectorMl/main/${filePath}`;
-      handleInputChange(platform, key, rawUrl);
+      handleInputChange(platform, key, rawUrl); // Update form data with the URL
 
       setModalState({
         isOpen: true,
@@ -824,27 +824,29 @@ const Home: React.FC = () => {
   };
 
   const generateLink = async () => {
-    if (!formData.targetLinks?.tlink1) {
+    // Validate top-level target link
+    const targetLinkError = formData.targetLinks?.tlink1 ? isValidUrl(formData.targetLinks.tlink1) ? null : "Target Link must be a valid URL (e.g., https://example.com)." : "Please enter the Target Link before generating!";
+    if (targetLinkError) {
+      setErrors(prev => ({
+        ...prev,
+        targetLinks: {
+          ...(prev.targetLinks || {}),
+          tlink1: targetLinkError
+        }
+      }));
       setModalState({
         isOpen: true,
         type: "error",
-        message: "Please enter the Target Link before generating!",
+        message: targetLinkError,
       });
       return;
     }
 
-    if (!isValidUrl(formData.targetLinks.tlink1)) {
-      setModalState({
-        isOpen: true,
-        type: "error",
-        message: "Target Link must be a valid URL (e.g., https://example.com)!",
-      });
-      return;
-    }
-
-    const hasErrors = Object.values(errors).some((platformErrors) =>
-      Object.values(platformErrors).some((error) => error)
+    // Check all nested errors
+    const hasErrors = Object.values(errors).some(platformErrors =>
+      platformErrors && Object.values(platformErrors).some(error => error)
     );
+
     if (hasErrors) {
       setModalState({
         isOpen: true,
@@ -930,162 +932,69 @@ const Home: React.FC = () => {
     setPreviewModalOpen(true);
   };
 
-  const getIconForAction = (platform: string, action: string): IconType => {
+  const getIconForAction = (platform: string, actionKey: string): IconType => {
     const iconMap: { [key: string]: IconType } = {
-      'YouTube-subs1': FaYoutube,
-      'YouTube-subs2': FaYoutube,
-      'YouTube-subs3': FaYoutube,
-      'YouTube-subs4': FaYoutube,
-      'YouTube-subs5': FaYoutube,
-      'YouTube-like': FaThumbsUp,
-      'YouTube-comm': FaComment,
-      'WhatsApp-msg1': FaEnvelope,
-      'WhatsApp-msg2': FaEnvelope,
-      'WhatsApp-msg3': FaEnvelope,
-      'WhatsApp-msg4': FaEnvelope,
-      'WhatsApp-msg5': FaEnvelope,
-      'WhatsApp-grp1': FaUsers,
-      'WhatsApp-grp2': FaUsers,
-      'WhatsApp-grp3': FaUsers,
-      'WhatsApp-grp4': FaUsers,
-      'WhatsApp-grp5': FaUsers,
-      'Telegram-chan1': FaUsers,
-      'Telegram-chan2': FaUsers,
-      'Telegram-chan3': FaUsers,
-      'Telegram-chan4': FaUsers,
-      'Telegram-chan5': FaUsers,
-      'Telegram-msg1': FaEnvelope,
-      'Telegram-msg2': FaEnvelope,
-      'Telegram-msg3': FaEnvelope,
-      'Telegram-msg4': FaEnvelope,
-      'Telegram-msg5': FaEnvelope,
-      'TikTok-flw1': FaTiktok,
-      'TikTok-flw2': FaTiktok,
-      'TikTok-flw3': FaTiktok,
-      'TikTok-flw4': FaTiktok,
-      'TikTok-flw5': FaTiktok,
-      'TikTok-like1': FaThumbsUp,
-      'TikTok-like2': FaThumbsUp,
-      'TikTok-like3': FaThumbsUp,
-      'TikTok-like4': FaThumbsUp,
-      'TikTok-like5': FaThumbsUp,
-      'Website-visit1': FaGlobe,
-      'Website-visit2': FaGlobe,
-      'Website-visit3': FaGlobe,
-      'Website-visit4': FaGlobe,
-      'Website-visit5': FaGlobe,
-      'Instagram-flw1': FaInstagram,
-      'Instagram-flw2': FaInstagram,
-      'Instagram-flw3': FaInstagram,
-      'Instagram-flw4': FaInstagram,
-      'Instagram-flw5': FaInstagram,
-      'Instagram-like1': FaThumbsUp,
-      'Instagram-like2': FaThumbsUp,
-      'Instagram-like3': FaThumbsUp,
-      'Instagram-like4': FaThumbsUp,
-      'Instagram-like5': FaThumbsUp,
-      'Facebook-like1': FaThumbsUp,
-      'Facebook-like2': FaThumbsUp,
-      'Facebook-like3': FaThumbsUp,
-      'Facebook-like4': FaThumbsUp,
-      'Facebook-like5': FaThumbsUp,
-      'Facebook-grp1': FaUsers,
-      'Facebook-grp2': FaUsers,
-      'Facebook-grp3': FaUsers,
-      'Facebook-grp4': FaUsers,
-      'Facebook-grp5': FaUsers,
-      'Advance Option-pass': FaLock,
-      'Advance Option-note': FaStickyNote,
-      'Advance Option-exp': FaCalendarAlt,
-      'Advance Option-thumb': FaImage,
+      'subs': FaYoutube,
+      'like': FaThumbsUp,
+      'comm': FaComment,
+      'msg': FaEnvelope,
+      'grp': FaUsers,
+      'chan': FaUsers,
+      'flw': platform === 'TikTok' ? FaTiktok : FaInstagram,
+      'visit': FaGlobe,
+      'pass': FaLock,
+      'note': FaStickyNote,
+      'exp': FaCalendarAlt,
+      'thumb': FaImage,
+      'tlink': FaLink,
     };
-    return iconMap[`${platform}-${action}`] || FaLink;
+    // Extract base action key (e.g., 'subs' from 'subs1', 'like' from 'like')
+    const baseAction = actionKey.match(/([a-zA-Z]+)/)?.[1] || actionKey;
+    return iconMap[baseAction] || FaLink;
   };
 
-  const getButtonText = (platform: string, action: string, buttonName?: string): string => {
-    const textMap: { [key: string]: string } = {
-      'YouTube-subs1': 'Subscribe Channel 1',
-      'YouTube-subs2': 'Subscribe Channel 2',
-      'YouTube-subs3': 'Subscribe Channel 3',
-      'YouTube-subs4': 'Subscribe Channel 4',
-      'YouTube-subs5': 'Subscribe Channel 5',
-      'YouTube-like': 'Like Video',
-      'YouTube-comm': 'Comment Video',
-      'WhatsApp-msg1': 'Send Message 1',
-      'WhatsApp-msg2': 'Send Message 2',
-      'WhatsApp-msg3': 'Send Message 3',
-      'WhatsApp-msg4': 'Send Message 4',
-      'WhatsApp-msg5': 'Send Message 5',
-      'WhatsApp-grp1': 'Join Group 1',
-      'WhatsApp-grp2': 'Join Group 2',
-      'WhatsApp-grp3': 'Join Group 3',
-      'WhatsApp-grp4': 'Join Group 4',
-      'WhatsApp-grp5': 'Join Group 5',
-      'Telegram-chan1': 'Join Channel 1',
-      'Telegram-chan2': 'Join Channel 2',
-      'Telegram-chan3': 'Join Channel 3',
-      'Telegram-chan4': 'Join Channel 4',
-      'Telegram-chan5': 'Join Channel 5',
-      'Telegram-msg1': 'Send Message 1',
-      'Telegram-msg2': 'Send Message 2',
-      'Telegram-msg3': 'Send Message 3',
-      'Telegram-msg4': 'Send Message 4',
-      'Telegram-msg5': 'Send Message 5',
-      'TikTok-flw1': 'Follow Account 1',
-      'TikTok-flw2': 'Follow Account 2',
-      'TikTok-flw3': 'Follow Account 3',
-      'TikTok-flw4': 'Follow Account 4',
-      'TikTok-flw5': 'Follow Account 5',
-      'TikTok-like1': 'Like Video 1',
-      'TikTok-like2': 'Like Video 2',
-      'TikTok-like3': 'Like Video 3',
-      'TikTok-like4': 'Like Video 4',
-      'TikTok-like5': 'Like Video 5',
-      'Website-visit1': 'Visit Website 1',
-      'Website-visit2': 'Visit Website 2',
-      'Website-visit3': 'Visit Website 3',
-      'Website-visit4': 'Visit Website 4',
-      'Website-visit5': 'Visit Website 5',
-      'Instagram-flw1': 'Follow Account 1',
-      'Instagram-flw2': 'Follow Account 2',
-      'Instagram-flw3': 'Follow Account 3',
-      'Instagram-flw4': 'Follow Account 4',
-      'Instagram-flw5': 'Follow Account 5',
-      'Instagram-like1': 'Like Post 1',
-      'Instagram-like2': 'Like Post 2',
-      'Instagram-like3': 'Like Post 3',
-      'Instagram-like4': 'Like Post 4',
-      'Instagram-like5': 'Like Post 5',
-      'Facebook-like1': 'Like Page 1',
-      'Facebook-like2': 'Like Page 2',
-      'Facebook-like3': 'Like Page 3',
-      'Facebook-like4': 'Like Page 4',
-      'Facebook-like5': 'Like Page 5',
-      'Facebook-grp1': 'Join Group 1',
-      'Facebook-grp2': 'Join Group 2',
-      'Facebook-grp3': 'Join Group 3',
-      'Facebook-grp4': 'Join Group 4',
-      'Facebook-grp5': 'Join Group 5',
-      'Advance Option-pass': 'Enter Password',
-      'Advance Option-note': 'Add Note',
-      'Advance Option-exp': 'Set Expiration',
-      'Advance Option-thumb': 'View Thumbnail',
-    };
+  const getButtonText = (platform: string, actionKey: string, buttonName?: string): string => {
     if (platform === 'Target') {
-      return buttonName || `Get Link ${action.replace('tlink', '')}`;
+      const index = parseInt(actionKey.replace('tlink', ''), 10);
+      return buttonName || `Get Link ${index}`;
     }
-    return textMap[`${platform}-${action}`] || `${platform} - ${action}`;
+
+    const textMap: { [key: string]: string } = {
+      'subs': 'Subscribe Channel',
+      'like': 'Like Video',
+      'comm': 'Comment Video',
+      'msg': 'Send Message',
+      'grp': 'Join Group',
+      'chan': 'Join Channel',
+      'flw': 'Follow Account',
+      'visit': 'Visit Website',
+      'pass': 'Enter Password',
+      'note': 'Add Note',
+      'exp': 'Set Expiration',
+      'thumb': 'View Thumbnail',
+    };
+
+    const baseAction = actionKey.match(/([a-zA-Z]+)/)?.[1] || actionKey;
+    const numberMatch = actionKey.match(/\d+/);
+    const numberSuffix = numberMatch ? ` ${numberMatch[0]}` : '';
+
+    return `${textMap[baseAction] || baseAction}${numberSuffix}`;
   };
 
   const socialPlatforms = ['YouTube', 'WhatsApp', 'Telegram', 'TikTok', 'Website', 'Instagram', 'Facebook', 'Advance Option'];
   const socialButtonsPreview = socialPlatforms.flatMap((platform) =>
     formData[platform]
-      ? Object.entries(formData[platform]).map(([action]) => ({ platform, action }))
+      ? Object.entries(formData[platform]!).map(([actionKey]) => ({ platform, actionKey }))
       : []
   );
+
   const targetButtonsPreview = formData.targetLinks
-    ? Object.entries(formData.targetLinks).map(([key]) => ({ platform: 'Target', action: key }))
+    ? Object.entries(formData.targetLinks).map(([key]) => ({ platform: 'Target', actionKey: key }))
     : [];
+
+  // Filter out tlink1 from the dynamic target buttons as it's handled separately
+  const filteredTargetButtonsPreview = targetButtonsPreview.filter(btn => btn.actionKey !== 'tlink1');
+
   const thumbnail = formData["Advance Option"]?.thumb;
 
   return (
@@ -1105,6 +1014,7 @@ const Home: React.FC = () => {
               suggestions={inputHistory["topLevel-title"] || []}
               onChange={(e) => handleTopLevelInputChange("title", e.target.value)}
               disabled={loading}
+              value={formData.title || ""}
             />
             <AnimatedInput
               icon={FaSubscript}
@@ -1113,6 +1023,7 @@ const Home: React.FC = () => {
               suggestions={inputHistory["topLevel-subtitle"] || []}
               onChange={(e) => handleTopLevelInputChange("subtitle", e.target.value)}
               disabled={loading}
+              value={formData.subtitle || ""}
             />
           </div>
 
@@ -1139,6 +1050,7 @@ const Home: React.FC = () => {
               errors={errors[platform] || {}}
               inputHistory={inputHistory}
               addToInputHistory={addToInputHistory}
+              formData={formData} // Pass formData
             />
           ))}
 
@@ -1150,13 +1062,14 @@ const Home: React.FC = () => {
               suggestions={inputHistory["topLevel-buttonName"] || []}
               onChange={(e) => handleTopLevelInputChange("buttonName", e.target.value)}
               disabled={loading}
+              value={formData.buttonName || ""}
             />
             <AnimatedInput
               icon={FaLink}
-              placeholder="Enter Target Link"
+              placeholder="Enter Target Link (e.g., https://example.com)"
               inputId="tlink1"
               suggestions={inputHistory["topLevel-tlink1"] || []}
-              onChange={(e) => handleTopLevelInputChange("tlink1", e.target.value)}
+              onChange={(e) => handleTopLevelInputChange("tlink1", e.target.value, isValidUrl)}
               disabled={loading}
               value={formData.targetLinks?.tlink1 || ""}
               error={errors.targetLinks?.tlink1}
@@ -1246,17 +1159,21 @@ const Home: React.FC = () => {
           )}
 
           <div className="w-full space-y-3">
-            {socialButtonsPreview.map(({ platform, action }) => {
-              const Icon = getIconForAction(platform, action);
+            {socialButtonsPreview.map(({ platform, actionKey }) => {
+              const Icon = getIconForAction(platform, actionKey);
+              // Do not render if the value is empty (meaning the input was removed)
+              const value = platform === "Advance Option" ? formData["Advance Option"]?.[actionKey] : formData[platform]?.[actionKey];
+              if (!value) return null;
+
               return (
                 <div
-                  key={`${platform}-${action}`}
+                  key={`${platform}-${actionKey}`}
                   className="w-full flex items-center bg-purple-600 text-white py-3 px-5 rounded-full shadow-md relative group"
                   style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
                 >
                   <Icon className="mr-3 text-lg" />
                   <div className="flex-1 text-center">
-                    {getButtonText(platform, action)}
+                    {getButtonText(platform, actionKey)}
                   </div>
                   <div className="p-2 rounded-full bg-opacity-20 bg-white">
                     <FaArrowRight className="w-5 h-5 text-gray-400" />
@@ -1265,21 +1182,43 @@ const Home: React.FC = () => {
               );
             })}
 
-            {targetButtonsPreview.map(({ action }) => (
+            {/* Render tlink1 if it exists */}
+            {formData.targetLinks?.tlink1 && (
               <div
-                key={`Target-${action}`}
+                key={`Target-tlink1`}
                 className="w-full flex items-center bg-gray-600 text-white py-3 px-5 rounded-full shadow-md relative group"
                 style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
               >
                 <FaLink className="mr-3 text-lg" />
                 <div className="flex-1 text-center">
-                  {getButtonText('Target', action, formData.buttonName)}
+                  {formData.buttonName || `Get Link 1`}
                 </div>
                 <div className="p-2 rounded-full bg-opacity-20 bg-white">
                   <FaArrowRight className="w-5 h-5 text-gray-400" />
                 </div>
               </div>
-            ))}
+            )}
+
+            {filteredTargetButtonsPreview.map(({ actionKey }) => {
+              const value = formData.targetLinks?.[actionKey];
+              if (!value) return null; // Do not render if the value is empty
+
+              return (
+                <div
+                  key={`Target-${actionKey}`}
+                  className="w-full flex items-center bg-gray-600 text-white py-3 px-5 rounded-full shadow-md relative group"
+                  style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)' }}
+                >
+                  <FaLink className="mr-3 text-lg" />
+                  <div className="flex-1 text-center">
+                    {getButtonText('Target', actionKey, formData.buttonName)}
+                  </div>
+                  <div className="p-2 rounded-full bg-opacity-20 bg-white">
+                    <FaArrowRight className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </Modal>
