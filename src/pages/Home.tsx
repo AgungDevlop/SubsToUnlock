@@ -12,7 +12,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
-const GITHUB_TOKEN_URL = "https://myapi.videyhost.my.id/ghtoken.json";
+// Ganti URL ini sesuai lokasi file githubtoken.php Anda
+const GITHUB_TOKEN_URL = "https://myapi.videyhost.my.id/githubtoken.php"; 
 const STORAGE_KEY = "subs4unlock_form_state_final";
 
 const isValidUrl = (url: string): boolean => {
@@ -541,6 +542,7 @@ const Home: React.FC = () => {
     setModalState({ isOpen: true, type: "loading", message: "Uploading thumbnail..." });
     try {
       const tokenResp = await fetch(GITHUB_TOKEN_URL);
+      if (!tokenResp.ok) throw new Error("Failed to fetch token config");
       const { githubToken } = await tokenResp.json();
       
       const reader = new FileReader();
@@ -565,6 +567,7 @@ const Home: React.FC = () => {
       setModalState({ isOpen: true, type: "success", message: "Uploaded!" });
       setTimeout(() => setModalState({ isOpen: false, type: "", message: "" }), 1000);
     } catch (error) {
+      console.error(error);
       setModalState({ isOpen: true, type: "error", message: "Upload failed." });
     }
   };
