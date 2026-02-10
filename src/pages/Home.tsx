@@ -255,14 +255,12 @@ const PlatformInputs = memo(({
       },
     },
     "Advance Option": {
-      options: ["Password", "Note", "Expired", "Thumbnails", "Button Style", "Theme Color"],
+      options: ["Password", "Note", "Expired", "Thumbnails"],
       inputs: {
         Password: { icon: FaLock, placeholder: () => "Set Password", key: () => "pass", type: 'text' },
         Note: { icon: FaStickyNote, placeholder: () => "Add User Note", key: () => "note", type: 'text' },
         Expired: { icon: FaCalendarAlt, placeholder: () => "Expiration Date", key: () => "exp", type: "date" },
         Thumbnails: { icon: FaImage, placeholder: () => "Upload Thumbnail", key: () => "thumb", type: "file", accept: "image/*" },
-        "Button Style": { icon: FaShapes, type: 'style', key: () => 'sty' },
-        "Theme Color": { icon: FaPalette, type: 'color', key: () => 'color' }
       },
     },
   }), []);
@@ -284,11 +282,7 @@ const PlatformInputs = memo(({
       Object.keys(config.inputs).forEach(opt => {
          const optionKey = opt.replace("+ ", "").trim();
          const key = config.inputs[optionKey].key();
-         if (key === 'sty' || key === 'color') {
-             if (formData[key]) newCounts[optionKey] = 1;
-         } else if (data?.[key]) {
-             newCounts[optionKey] = 1;
-         }
+         if (data?.[key]) newCounts[optionKey] = 1;
       });
     } else {
       Object.keys(config.inputs).forEach(opt => {
@@ -304,7 +298,7 @@ const PlatformInputs = memo(({
         return isDifferent ? newCounts : prev;
     });
 
-  }, [platform, data, config.inputs, getInitialCount, formData]); 
+  }, [platform, data, config.inputs, getInitialCount]); 
 
   const addOption = useCallback((option: string) => {
     const optionKey = option.replace("+ ", "").trim();
@@ -326,12 +320,8 @@ const PlatformInputs = memo(({
     const optionKey = option.replace("+ ", "").trim();
     setInputCounts((prev) => ({ ...prev, [optionKey]: (prev[optionKey] || 1) - 1 }));
     const key = config.inputs[optionKey].key(index);
-    if(config.inputs[optionKey].type === 'style' || config.inputs[optionKey].type === 'color') {
-        onTopLevelInputChange(key, key === 'sty' ? 'style1' : '#8b5cf6');
-    } else {
-        onInputChange(platform, key, "");
-    }
-  }, [config.inputs, onInputChange, platform, onTopLevelInputChange]);
+    onInputChange(platform, key, "");
+  }, [config.inputs, onInputChange, platform]);
 
   return (
     <motion.div
@@ -379,65 +369,6 @@ const PlatformInputs = memo(({
             const inputConfig = config.inputs[option];
             const key = inputConfig.key(i);
             
-            if (inputConfig.type === 'style') {
-              return (
-                <div key="style-selector" className="mb-2">
-                  <div className="flex justify-between items-center mb-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <FaShapes /> Button Style
-                    </label>
-                    <button onClick={() => removeOption(option, i)} className="text-slate-600 hover:text-red-400 p-1 rounded-full hover:bg-red-400/10 transition-colors"><FaTimes size={10} /></button>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {stylesConfig.map((s) => (
-                      <button
-                        key={s.id}
-                        onClick={() => onTopLevelInputChange('sty', s.id)}
-                        className={`py-3 px-2 text-xs font-bold border transition-all ${
-                          formData.sty === s.id
-                            ? 'bg-slate-700 border-violet-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.3)]'
-                            : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-700'
-                        } rounded-xl`}
-                      >
-                        {s.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            }
-
-            if (inputConfig.type === 'color') {
-              return (
-                <div key="color-selector" className="mb-2">
-                  <div className="flex justify-between items-center mb-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <FaPalette /> Theme Color
-                    </label>
-                    <button onClick={() => removeOption(option, i)} className="text-slate-600 hover:text-red-400 p-1 rounded-full hover:bg-red-400/10 transition-colors"><FaTimes size={10} /></button>
-                  </div>
-                  <div className="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50 flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={formData.color || "#8b5cf6"}
-                      onChange={(e) => onTopLevelInputChange('color', e.target.value)}
-                      className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
-                    />
-                    <div className="flex-1 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                      {colorsConfig.map((c) => (
-                        <button
-                          key={c}
-                          onClick={() => onTopLevelInputChange('color', c)}
-                          className={`w-8 h-8 rounded-full border-2 flex-shrink-0 transition-transform hover:scale-110 ${formData.color === c ? 'border-white scale-110' : 'border-transparent'}`}
-                          style={{ backgroundColor: c }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-            
             return (
               <AnimatedInput
                 key={`${option}-${i}`}
@@ -453,13 +384,63 @@ const PlatformInputs = memo(({
                     onInputChange(platform, key, e.target.value);
                   }
                 }}
-                onRemove={platform !== "Advance Option" || !['style', 'color', 'file'].includes(inputConfig.type) ? () => removeOption(option, i) : undefined}
+                onRemove={platform !== "Advance Option" || inputConfig.type !== 'file' ? () => removeOption(option, i) : undefined}
                 error={errors[key]}
               />
             );
           });
         })}
-        {Object.keys(inputCounts).length === 0 && (
+
+        {platform === "Advance Option" && (
+          <div className="pt-4 border-t border-slate-700/50 mt-4 space-y-6">
+            <div key="style-selector">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-3">
+                <FaShapes /> Button Style
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {stylesConfig.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => onTopLevelInputChange('sty', s.id)}
+                    className={`py-3 px-2 text-xs font-bold border transition-all ${
+                      formData.sty === s.id
+                        ? 'bg-slate-700 border-violet-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.3)]'
+                        : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-700'
+                    } rounded-xl`}
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div key="color-selector">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-3">
+                <FaPalette /> Theme Color
+              </label>
+              <div className="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50 flex items-center gap-3">
+                <input
+                  type="color"
+                  value={formData.color || "#8b5cf6"}
+                  onChange={(e) => onTopLevelInputChange('color', e.target.value)}
+                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                />
+                <div className="flex-1 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {colorsConfig.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => onTopLevelInputChange('color', c)}
+                      className={`w-8 h-8 rounded-full border-2 flex-shrink-0 transition-transform hover:scale-110 ${formData.color === c ? 'border-white scale-110' : 'border-transparent'}`}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {Object.keys(inputCounts).length === 0 && platform !== "Advance Option" && (
           <div className="text-center py-6 border-2 border-dashed border-slate-700/50 rounded-xl">
              <p className="text-slate-500 text-xs">Select an option above to add inputs</p>
           </div>
@@ -729,7 +710,7 @@ const Home: React.FC = () => {
               <PlatformInputs
                 key={platform}
                 platform={platform}
-                data={formData[platform] || {}}
+                data={platform === "Target Link" ? formData.targetLinks : (formData[platform] || {})}
                 onInputChange={handleInputChange}
                 onTopLevelInputChange={handleTopLevelInputChange}
                 uploadImage={uploadImageToGitHub}
