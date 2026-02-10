@@ -12,7 +12,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
-// Ganti URL ini sesuai lokasi file githubtoken.php Anda
 const GITHUB_TOKEN_URL = "https://myapi.videyhost.my.id/githubtoken.php"; 
 const STORAGE_KEY = "subs4unlock_form_state_final";
 
@@ -463,6 +462,7 @@ const Home: React.FC = () => {
   const [generatedKey, setGeneratedKey] = useState<string>("");
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: "loading" | "success" | "error" | ""; message: string }>({ isOpen: false, type: "", message: "" });
   const [previewModalOpen, setPreviewModalOpen] = useState<boolean>(false);
+  const [cooldown, setCooldown] = useState<number>(0);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -485,6 +485,16 @@ const Home: React.FC = () => {
     const stateToSave: SavedState = { formData, activePlatforms };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
   }, [formData, activePlatforms]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (cooldown > 0) {
+      timer = setInterval(() => {
+        setCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const clearForm = () => {
     if (window.confirm("Are you sure you want to reset the form? All data will be lost.")) {
@@ -573,6 +583,8 @@ const Home: React.FC = () => {
   };
 
   const generateLink = async () => {
+    if (cooldown > 0) return;
+
     if (!formData.targetLinks?.tlink1 || !isValidUrl(formData.targetLinks.tlink1)) {
       setModalState({ isOpen: true, type: "error", message: "Main Destination Link is missing or invalid!" });
       return;
@@ -586,13 +598,21 @@ const Home: React.FC = () => {
         body: JSON.stringify(formData),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Generation Failed");
+      
+      if (!response.ok) {
+        if(response.status === 429) {
+           throw new Error(result.message || "Too many requests. Please wait.");
+        }
+        throw new Error(result.error || "Generation Failed");
+      }
 
       setGeneratedKey(result.key);
       setModalState({ isOpen: true, type: "success", message: "Link Generated!" });
+      setCooldown(20);
       setTimeout(() => setModalState({ isOpen: false, type: "", message: "" }), 1000);
     } catch (error) {
       setModalState({ isOpen: true, type: "error", message: (error as Error).message });
+      setCooldown(20); 
     } finally {
       setLoading(false);
     }
@@ -752,11 +772,18 @@ const Home: React.FC = () => {
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
              <button
                onClick={generateLink}
-               disabled={loading}
-               className="flex-1 bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 text-white font-bold py-4 rounded-xl shadow-xl shadow-violet-900/20 transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center gap-2 border border-violet-500/30"
+               disabled={loading || cooldown > 0}
+               className="flex-1 bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 text-white font-bold py-4 rounded-xl shadow-xl shadow-violet-900/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:grayscale disabled:cursor-not-allowed flex justify-center items-center gap-2 border border-violet-500/30"
              >
-               {loading ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"/> : <FaLock />}
-               {loading ? "Generating..." : "GENERATE LINK"}
+               {loading ? (
+                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"/>
+               ) : cooldown > 0 ? (
+                 `Wait ${cooldown}s`
+               ) : (
+                 <>
+                   <FaLock /> GENERATE LINK
+                 </>
+               )}
              </button>
              <button
                onClick={() => setPreviewModalOpen(true)}
