@@ -1,35 +1,75 @@
-const TermsAndConditions = () => (
-  <div className="container mx-auto p-4 text-white pb-20">
-    <h1 className="text-3xl font-bold mb-4">Syarat dan Ketentuan Subs for Unlock</h1>
+import { FaExclamationTriangle, FaUserCheck, FaBan } from 'react-icons/fa';
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Penggunaan Layanan</h2>
-    <p>Dengan menggunakan Subs for Unlock, Anda setuju dengan syarat dan ketentuan berikut:</p>
-    <ul className="list-disc pl-5 mb-4">
-      <li>Anda harus berusia minimal 13 tahun untuk menggunakan layanan ini, sesuai dengan ketentuan umum platform media sosial.</li>
-      <li>Anda bertanggung jawab atas semua tautan, tugas sosial, dan konten yang Anda kunci melalui layanan ini.</li>
-      <li>Anda dilarang menggunakan layanan ini untuk menyebarkan konten ilegal, menipu, atau melanggar hukum yang berlaku.</li>
-      <li>Tindakan sosial yang Anda tetapkan (misalnya subscribe, like, atau join) harus sesuai dengan kebijakan masing-masing platform (YouTube, WhatsApp, dll.).</li>
-    </ul>
+const TermsAndConditions = () => {
+  return (
+    <div className="max-w-4xl mx-auto pb-20">
+      <div className="bg-slate-900/50 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl p-8 sm:p-12">
+        
+        <div className="border-b border-white/10 pb-8 mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Syarat & Ketentuan</h1>
+          <p className="text-slate-400">Ketentuan Penggunaan Layanan Subs for Unlock</p>
+        </div>
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Pembuatan dan Penguncian Konten</h2>
-    <ul className="list-disc pl-5 mb-4">
-      <li>Anda dapat mengunci tautan atau konten dengan menetapkan tugas sosial seperti berlangganan ke channel YouTube, bergabung ke grup WhatsApp, atau mengikuti akun media sosial.</li>
-      <li>Setiap data yang Anda unggah akan menghasilkan `key` unik yang digunakan untuk mengakses konten terkunci melalui URL (contoh: `/e/02d23a4112`).</li>
-      <li>Kami tidak bertanggung jawab atas konten yang Anda kunci atau tindakan pengguna yang gagal memenuhi tugas sosial.</li>
-    </ul>
+        <div className="space-y-10">
+          
+          <section>
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+              <div className="p-2 bg-purple-500/20 rounded-lg"><FaUserCheck className="text-purple-400" /></div>
+              Penggunaan Layanan
+            </h2>
+            <ul className="grid gap-3 text-slate-300">
+              <li className="flex items-start gap-3">
+                <span className="bg-white/10 w-1.5 h-1.5 rounded-full mt-2.5 shrink-0"></span>
+                <span>Minimal usia 13 tahun sesuai standar platform media sosial global.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="bg-white/10 w-1.5 h-1.5 rounded-full mt-2.5 shrink-0"></span>
+                <span>Tugas sosial (Like, Subscribe, dll) harus mematuhi TOS platform terkait (YouTube, WhatsApp, dll).</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="bg-white/10 w-1.5 h-1.5 rounded-full mt-2.5 shrink-0"></span>
+                <span>Pengguna bertanggung jawab penuh atas konten yang dikunci di platform ini.</span>
+              </li>
+            </ul>
+          </section>
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Kebijakan Konten</h2>
-    <p>Kami berhak menghapus atau menangguhkan akses ke konten yang Anda kunci jika melanggar hak cipta, mengandung materi berbahaya, atau melanggar hukum tanpa pemberitahuan sebelumnya. Anda menjamin bahwa konten atau tautan yang Anda unggah adalah milik Anda atau Anda memiliki izin untuk membagikannya.</p>
+          <section>
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+              <div className="p-2 bg-red-500/20 rounded-lg"><FaBan className="text-red-400" /></div>
+              Larangan Keras
+            </h2>
+            <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-5 text-red-200/90 text-sm sm:text-base">
+              <p className="mb-2 font-bold">Anda dilarang menggunakan layanan ini untuk:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Menyebarkan malware, virus, atau software berbahaya.</li>
+                <li>Phishing, penipuan, atau konten ilegal.</li>
+                <li>Konten dewasa, kekerasan, atau ujaran kebencian.</li>
+              </ul>
+              <p className="mt-3 text-xs opacity-70">Pelanggaran akan mengakibatkan pemblokiran permanen tanpa peringatan.</p>
+            </div>
+          </section>
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Tanggung Jawab Pengguna</h2>
-    <ul className="list-disc pl-5 mb-4">
-      <li>Pengguna yang mengakses URL Subs for Unlock bertanggung jawab untuk menyelesaikan tugas sosial yang ditetapkan agar dapat membuka konten.</li>
-      <li>Kami tidak menjamin bahwa semua pengguna akan menyelesaikan tugas sosial atau bahwa konten Anda akan selalu tersedia.</li>
-    </ul>
+          <section>
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+              <div className="p-2 bg-yellow-500/20 rounded-lg"><FaExclamationTriangle className="text-yellow-400" /></div>
+              Penafian (Disclaimer)
+            </h2>
+            <p className="text-slate-300 leading-relaxed text-sm">
+              Kami tidak menjamin bahwa semua pengguna akan menyelesaikan tugas sosial dengan sempurna. Kami bertindak sebagai perantara teknis. Ketersediaan konten tujuan adalah tanggung jawab pembuat tautan sepenuhnya. Kami berhak menghapus konten yang dilaporkan melanggar hak cipta.
+            </p>
+          </section>
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Perubahan Syarat</h2>
-    <p>Kami dapat memperbarui syarat dan ketentuan ini kapan saja. Perubahan akan diumumkan di situs web kami, dan penggunaan layanan setelah perubahan berarti Anda menerima syarat yang baru.</p>
-  </div>
-);
+          <div className="pt-8 border-t border-white/10 text-center">
+            <p className="text-slate-500 text-xs">
+              Dengan mengakses layanan ini, Anda menyetujui persyaratan di atas. <br/>
+              Kami berhak mengubah ketentuan ini sewaktu-waktu.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default TermsAndConditions;

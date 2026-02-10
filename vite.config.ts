@@ -14,13 +14,14 @@ export default defineConfig({
     }),
     {
       name: 'generate-sitemap',
+      // Gunakan hook 'buildStart' agar sitemap dibuat sebelum proses bundling dimulai
       buildStart() {
-        console.log('Generating sitemap...');
+        console.log('🔄 Generating sitemap...');
         try {
-          execSync('npm run generate-sitemap');
-          console.log('Sitemap generated successfully.');
+          // Memanggil script yang kita buat di langkah 1 via npm
+          execSync('npm run generate-sitemap', { stdio: 'inherit' });
         } catch (error) {
-          console.error('Failed to generate sitemap:', error);
+          console.error('❌ Failed to generate sitemap:', error);
         }
       },
     },

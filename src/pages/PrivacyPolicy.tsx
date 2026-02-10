@@ -1,75 +1,76 @@
-const PrivacyPolicy = () => (
-  <div className="container mx-auto p-4 text-white pb-20">
-    <h1 className="text-3xl font-bold mb-4">Kebijakan Privasi - Subs 4 Unlock</h1>
-    <p>
-      Kami di Subs 4 Unlock menghargai privasi Anda dan berkomitmen untuk melindungi informasi pribadi Anda. Kebijakan ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi data Anda saat Anda menggunakan layanan kami untuk membuka tautan eksklusif melalui langganan sosial media.
-    </p>
+import {FaUserSecret, FaDatabase, FaLock } from 'react-icons/fa';
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Informasi yang Dikumpulkan</h2>
-    <ul className="list-disc pl-5">
-      <li>
-        <strong>Data Identifikasi:</strong> Informasi seperti alamat IP, jenis perangkat, dan browser yang Anda gunakan saat mengakses Subs 4 Unlock.
-      </li>
-      <li>
-        <strong>Data Interaksi:</strong> Tindakan sosial media yang Anda lakukan (misalnya, berlangganan YouTube, bergabung dengan grup WhatsApp, atau mengikuti akun Instagram) untuk membuka tautan.
-      </li>
-      <li>
-        <strong>Data Penggunaan:</strong> Log aktivitas seperti tautan yang dihasilkan, tautan yang dibuka, dan waktu akses.
-      </li>
-      <li>
-        <strong>Data Opsional:</strong> Jika Anda menghubungi kami, informasi seperti nama atau email yang Anda berikan secara sukarela.
-      </li>
-    </ul>
+const PrivacyPolicy = () => {
+  return (
+    <div className="max-w-4xl mx-auto pb-20">
+      <div className="bg-slate-900/50 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl p-8 sm:p-12">
+        
+        <div className="border-b border-white/10 pb-8 mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Kebijakan Privasi</h1>
+          <p className="text-slate-400">Terakhir diperbarui: {new Date().getFullYear()}</p>
+        </div>
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Penggunaan Informasi</h2>
-    <ul className="list-disc pl-5">
-      <li>
-        Untuk menyediakan layanan Subs 4 Unlock, termasuk memverifikasi tindakan sosial media dan membuka tautan eksklusif untuk Anda.
-      </li>
-      <li>
-        Untuk meningkatkan layanan kami, seperti menganalisis pola penggunaan dan mendeteksi masalah teknis.
-      </li>
-      <li>
-        Untuk mendukung keamanan situs, mencegah penyalahgunaan, dan memastikan pengalaman pengguna yang lancar.
-      </li>
-    </ul>
+        <div className="space-y-10">
+          <section>
+            <p className="text-slate-300 leading-relaxed">
+              Kami di <span className="text-purple-400 font-bold">Subs 4 Unlock</span> berkomitmen untuk melindungi informasi pribadi Anda. Dokumen ini menjelaskan transparansi pengelolaan data saat Anda menggunakan layanan pembuka tautan eksklusif kami.
+            </p>
+          </section>
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Berbagi Data</h2>
-    <p>
-      Kami tidak menjual atau membagikan informasi pribadi Anda kepada pihak ketiga untuk tujuan pemasaran. Data Anda hanya akan dibagikan dalam kasus berikut:
-    </p>
-    <ul className="list-disc pl-5">
-      <li>Jika diperlukan oleh hukum atau perintah pengadilan.</li>
-      <li>
-        Dengan penyedia layanan pihak ketiga (misalnya, hosting atau analitik) yang membantu kami menjalankan Subs 4 Unlock, dengan kewajiban menjaga kerahasiaan data.
-      </li>
-    </ul>
+          <section>
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <FaUserSecret className="text-purple-500" /> Informasi yang Dikumpulkan
+            </h2>
+            <div className="bg-slate-800/30 rounded-xl p-5 border border-white/5">
+              <ul className="space-y-3 text-slate-300 text-sm sm:text-base">
+                <li className="flex gap-3">
+                  <span className="font-bold text-white min-w-[120px]">Data Identifikasi:</span>
+                  <span>Alamat IP, jenis perangkat, dan browser (User Agent).</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="font-bold text-white min-w-[120px]">Data Interaksi:</span>
+                  <span>Status tugas sosial (Subscribe, Like, Follow) untuk verifikasi akses.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="font-bold text-white min-w-[120px]">Data Log:</span>
+                  <span>Waktu akses, tautan yang dibuat, dan tautan yang dibuka.</span>
+                </li>
+              </ul>
+            </div>
+          </section>
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Keamanan Data</h2>
-    <p>
-      Kami menggunakan langkah-langkah keamanan seperti enkripsi dan perlindungan server untuk menjaga data Anda tetap aman. Namun, harap diperhatikan bahwa tidak ada sistem yang sepenuhnya kebal dari risiko keamanan.
-    </p>
+          <section>
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <FaDatabase className="text-blue-500" /> Penggunaan Informasi
+            </h2>
+            <ul className="list-disc pl-5 space-y-2 text-slate-300 marker:text-blue-500">
+              <li>Memverifikasi penyelesaian tugas sosial secara otomatis.</li>
+              <li>Menganalisis performa sistem dan mendeteksi anomali trafik.</li>
+              <li>Mencegah penyalahgunaan layanan (spam/bot).</li>
+            </ul>
+          </section>
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Hak Anda</h2>
-    <p>
-      Anda memiliki hak untuk:
-    </p>
-    <ul className="list-disc pl-5">
-      <li>Meminta akses ke data pribadi yang kami simpan tentang Anda.</li>
-      <li>Meminta perubahan atau penghapusan data Anda jika memungkinkan.</li>
-      <li>Menghubungi kami di <a href="mailto:support@subs4unlock.com" className="text-purple-400 hover:underline">support@subs4unlock.com</a> untuk pertanyaan atau permintaan terkait privasi.</li>
-    </ul>
+          <section>
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <FaLock className="text-green-500" /> Keamanan & Hak Anda
+            </h2>
+            <div className="space-y-4 text-slate-300">
+              <p>
+                Kami menggunakan enkripsi SSL/TLS standar industri. Data Anda tidak diperjualbelikan ke pihak ketiga untuk pemasaran.
+              </p>
+              <p>
+                Anda berhak meminta penghapusan jejak data digital Anda dengan menghubungi: 
+                <a href="mailto:support@subs4unlock.com" className="text-purple-400 hover:text-purple-300 ml-1 font-medium transition-colors">
+                  support@subs4unlock.com
+                </a>
+              </p>
+            </div>
+          </section>
+        </div>
 
-    <h2 className="text-2xl font-bold mt-6 mb-4">Perubahan Kebijakan</h2>
-    <p>
-      Kami dapat memperbarui kebijakan privasi ini seiring waktu untuk mencerminkan perubahan pada layanan kami atau peraturan yang berlaku. Versi terbaru akan selalu tersedia di halaman ini. Dengan melanjutkan penggunaan Subs 4 Unlock setelah perubahan, Anda menyetujui kebijakan yang diperbarui.
-    </p>
-
-    <h2 className="text-2xl font-bold mt-6 mb-4">Kontak Kami</h2>
-    <p>
-      Jika Anda memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami di <a href="mailto:support@subs4unlock.com" className="text-purple-400 hover:underline">support@subs4unlock.com</a>.
-    </p>
-  </div>
-);
+      </div>
+    </div>
+  );
+};
 
 export default PrivacyPolicy;

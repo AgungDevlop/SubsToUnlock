@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FaAngleDoubleRight } from 'react-icons/fa';
+import { FaAngleDoubleRight, FaExclamationTriangle, FaLink, FaArrowLeft } from 'react-icons/fa';
 
-// Array tautan acak (sama seperti di PageLink.tsx)
 const randomLinks = [
   "https://obqj2.com/4/9277726",
   "https://offensive-beat.com/b.3tV/0pP/3Mp/vabsmOVzJzZcD/0m2fMczqEE0GOoTHc-yNLXT/YrzvMhTfQI5UNpz/Mj",
@@ -12,133 +11,142 @@ export function GetLink() {
   const [targetUrl, setTargetUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Load ad script when component mounts
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://ptichoolsougn.net/401/9372886';
     script.async = true;
     document.body.appendChild(script);
-
-    // Cleanup: Remove script when component unmounts
     return () => {
       document.body.removeChild(script);
     };
   }, []);
 
   useEffect(() => {
-    // Ambil URL dari session storage
     const url = sessionStorage.getItem('targetUrl');
     if (url) {
       setTargetUrl(url);
     } else {
-      setError('No target URL found. Please go back and try again.');
+      setError('Target link session has expired or is invalid.');
     }
   }, []);
 
-  const handleGetLinkClick = () => {
+  const handleGetLinkClick = useCallback(() => {
     if (targetUrl) {
-      // Buka URL target di tab baru
-      window.open(targetUrl, '_blank');
-      // Setelah 2 detik, alihkan tab lama ke tautan acak
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
       setTimeout(() => {
         const randomIndex = Math.floor(Math.random() * randomLinks.length);
         window.location.href = randomLinks[randomIndex];
       }, 2000);
     }
-  };
+  }, [targetUrl]);
 
-  // Pisahkan teks "Get Link" menjadi huruf-huruf dan tambahkan ikon
   const text = "Get Link".split('');
-  const totalElements = text.length + 1; // +1 untuk ikon
+  const totalElements = text.length + 1;
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
-        <svg className="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p className="text-red-500 text-lg">{error}</p>
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
+          <FaExclamationTriangle className="text-3xl text-red-500" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-200 mb-2">Access Denied</h2>
+        <p className="text-slate-500 mb-8 max-w-xs">{error}</p>
         <button
           onClick={() => window.history.back()}
-          className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all active:scale-95"
         >
-          Go Back
+          <FaArrowLeft /> Go Back
         </button>
       </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4"
-    >
-      <div className="w-full max-w-md bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-700 text-center">
-        <h1 className="text-2xl font-bold mb-4">Your Target Link</h1>
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/10 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]"></div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl text-center relative z-10"
+      >
+        <div className="w-20 h-20 bg-violet-600/20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+          <FaLink className="text-3xl text-violet-400" />
+        </div>
+
+        <h1 className="text-2xl font-black text-white mb-2 tracking-tight">LINK READY</h1>
+        <p className="text-slate-400 text-sm mb-10 leading-relaxed">
+          Your destination link is prepared. Click the button below to proceed.
+        </p>
+
         {targetUrl ? (
-          <motion.button
-            onClick={handleGetLinkClick}
-            animate={{
-              boxShadow: [
-                "0 0 0 0 rgba(255, 255, 255, 0.2)",
-                "0 0 10px 5px rgba(255, 255, 255, 0.4)",
-                "0 0 20px 10px rgba(255, 255, 255, 0.3)",
-                "0 0 30px 15px rgba(255, 255, 255, 0.2)",
-                "0 0 20px 10px rgba(255, 255, 255, 0.3)",
-                "0 0 10px 5px rgba(255, 255, 255, 0.4)",
-                "0 0 0 0 rgba(255, 255, 255, 0.2)",
-              ], // Efek ombak memancar
-            }}
-            transition={{
-              boxShadow: { repeat: Infinity, duration: 2.5, ease: "easeOut" },
-            }}
-            className="relative inline-flex items-center justify-center px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors w-64 text-lg"
-          >
-            <div className="flex items-center justify-center">
-              {text.map((char, index) => (
+          <div className="relative group">
+            <motion.div
+              animate={{
+                scale: [1, 1.05, 1],
+                opacity: [0.3, 0.6, 0.3],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute inset-0 bg-violet-600 blur-2xl rounded-2xl"
+            />
+            
+            <motion.button
+              onClick={handleGetLinkClick}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="relative w-full py-5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-2xl font-black text-xl shadow-xl flex items-center justify-center gap-1 overflow-hidden border-t border-white/20"
+            >
+              <div className="flex items-center">
+                {text.map((char, index) => (
+                  <motion.span
+                    key={`char-${index}`}
+                    animate={{
+                      color: ["#ffffff", "#c7d2fe", "#ffffff"],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: index * (2 / totalElements),
+                    }}
+                  >
+                    {char === " " ? "\u00A0" : char}
+                  </motion.span>
+                ))}
                 <motion.span
-                  key={`char-${index}`}
-                  className="font-bold"
-                  style={{ fontFamily: "'Roboto', sans-serif" }}
                   animate={{
-                    color: ["#ffffff", "#1e3a8a", "#ffffff"], // Putih ke biru tua ke putih
+                    x: [0, 5, 0],
+                    color: ["#ffffff", "#c7d2fe", "#ffffff"],
                   }}
                   transition={{
-                    color: {
-                      repeat: Infinity,
-                      duration: 2,
-                      ease: "easeInOut",
-                      delay: index * (2 / totalElements), // Penundaan berurutan
-                    },
+                    duration: 1.5,
+                    repeat: Infinity,
+                    delay: text.length * (2 / totalElements),
                   }}
                 >
-                  {char}
+                  <FaAngleDoubleRight className="ml-3 text-2xl" />
                 </motion.span>
-              ))}
-              <motion.span
-                animate={{
-                  color: ["#ffffff", "#1e3a8a", "#ffffff"], // Putih ke biru tua ke putih
-                }}
-                transition={{
-                  color: {
-                    repeat: Infinity,
-                    duration: 2,
-                    ease: "easeInOut",
-                    delay: text.length * (2 / totalElements), // Penundaan untuk ikon
-                  },
-                }}
-              >
-                <FaAngleDoubleRight className="ml-2 w-6 h-6" />
-              </motion.span>
-            </div>
-          </motion.button>
+              </div>
+            </motion.button>
+          </div>
         ) : (
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-purple-500 mx-auto"></div>
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-800 border-t-violet-500"></div>
+            <p className="text-slate-500 text-xs font-bold tracking-widest uppercase">Validating Session</p>
+          </div>
         )}
-      </div>
-    </motion.div>
+      </motion.div>
+
+      <footer className="mt-12 text-center opacity-30 relative z-10">
+        <p className="text-[10px] font-bold tracking-[0.2em] text-slate-500 uppercase">
+          Protected by Subs4Unlock System
+        </p>
+      </footer>
+    </div>
   );
 }
 
