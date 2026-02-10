@@ -10,8 +10,7 @@ const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
 
 const randomLinks = [
-  "https://obqj2.com/4/9277726",
-  "https://offensive-beat.com/b.3tV/0pP/3Mp/vabsmOVzJzZcD/0m2fMczqEE0GOoTHc-yNLXT/YrzvMhTfQI5UNpz/Mj",
+  "https://otieu.com/4/10055984",
 ];
 
 interface AdvanceOption {
@@ -52,16 +51,6 @@ export function PageLink() {
 
   const [activeButtonIndex, setActiveButtonIndex] = useState(0);
   const [buttonStates, setButtonStates] = useState<{ [key: string]: 'idle' | 'loading' | 'completed' }>({});
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://ptichoolsougn.net/401/9372886';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   useEffect(() => {
     const fetchLinkData = async () => {

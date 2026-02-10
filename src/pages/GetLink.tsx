@@ -3,23 +3,12 @@ import { motion } from 'framer-motion';
 import { FaAngleDoubleRight, FaExclamationTriangle, FaLink, FaArrowLeft } from 'react-icons/fa';
 
 const randomLinks = [
-  "https://obqj2.com/4/9277726",
-  "https://offensive-beat.com/b.3tV/0pP/3Mp/vabsmOVzJzZcD/0m2fMczqEE0GOoTHc-yNLXT/YrzvMhTfQI5UNpz/Mj",
+  "https://otieu.com/4/10055984",
 ];
 
 export function GetLink() {
   const [targetUrl, setTargetUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://ptichoolsougn.net/401/9372886';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   useEffect(() => {
     const url = sessionStorage.getItem('targetUrl');

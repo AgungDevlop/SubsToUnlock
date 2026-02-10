@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
-const GITHUB_TOKEN_URL = "https://skinml.agungbot.my.id/";
+const GITHUB_TOKEN_URL = "https://myapi.videyhost.my.id/ghtoken.json";
 const STORAGE_KEY = "subs4unlock_form_state_final";
 
 const isValidUrl = (url: string): boolean => {
@@ -171,17 +171,31 @@ const AnimatedInput = memo(({
   </div>
 ));
 
+const stylesConfig = [
+    { id: 'style1', name: 'Rounded' },
+    { id: 'style2', name: 'Box' },
+    { id: 'style3', name: 'Glass' },
+    { id: 'style4', name: 'Neo' },
+    { id: 'style5', name: '3D' },
+];
+
+const colorsConfig = [
+    '#8b5cf6', '#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#ec4899', '#6366f1'
+];
+
 interface PlatformInputsProps {
   platform: string;
   data: any;
   onInputChange: (platform: string, key: string, value: string) => void;
+  onTopLevelInputChange: (key: string, value: string) => void;
   uploadImage: (platform: string, key: string, file: File) => Promise<void>;
   errors: { [key: string]: string };
   onRemovePlatform: () => void;
+  formData: FormData;
 }
 
 const PlatformInputs = memo(({ 
-  platform, data, onInputChange, uploadImage, errors, onRemovePlatform 
+  platform, data, onInputChange, onTopLevelInputChange, uploadImage, errors, onRemovePlatform, formData
 }: PlatformInputsProps) => {
   
   const platformConfigs: any = useMemo(() => ({
@@ -241,12 +255,14 @@ const PlatformInputs = memo(({
       },
     },
     "Advance Option": {
-      options: ["Password", "Note", "Expired", "Thumbnails"],
+      options: ["Password", "Note", "Expired", "Thumbnails", "Button Style", "Theme Color"],
       inputs: {
-        Password: { icon: FaLock, placeholder: () => "Set Password", key: () => "pass" },
-        Note: { icon: FaStickyNote, placeholder: () => "Add User Note", key: () => "note" },
+        Password: { icon: FaLock, placeholder: () => "Set Password", key: () => "pass", type: 'text' },
+        Note: { icon: FaStickyNote, placeholder: () => "Add User Note", key: () => "note", type: 'text' },
         Expired: { icon: FaCalendarAlt, placeholder: () => "Expiration Date", key: () => "exp", type: "date" },
         Thumbnails: { icon: FaImage, placeholder: () => "Upload Thumbnail", key: () => "thumb", type: "file", accept: "image/*" },
+        "Button Style": { icon: FaShapes, type: 'style', key: () => 'sty' },
+        "Theme Color": { icon: FaPalette, type: 'color', key: () => 'color' }
       },
     },
   }), []);
@@ -268,7 +284,11 @@ const PlatformInputs = memo(({
       Object.keys(config.inputs).forEach(opt => {
          const optionKey = opt.replace("+ ", "").trim();
          const key = config.inputs[optionKey].key();
-         if (data?.[key]) newCounts[optionKey] = 1;
+         if (key === 'sty' || key === 'color') {
+             if (formData[key]) newCounts[optionKey] = 1;
+         } else if (data?.[key]) {
+             newCounts[optionKey] = 1;
+         }
       });
     } else {
       Object.keys(config.inputs).forEach(opt => {
@@ -284,7 +304,7 @@ const PlatformInputs = memo(({
         return isDifferent ? newCounts : prev;
     });
 
-  }, [platform, data, config.inputs, getInitialCount]); 
+  }, [platform, data, config.inputs, getInitialCount, formData]); 
 
   const addOption = useCallback((option: string) => {
     const optionKey = option.replace("+ ", "").trim();
@@ -306,8 +326,12 @@ const PlatformInputs = memo(({
     const optionKey = option.replace("+ ", "").trim();
     setInputCounts((prev) => ({ ...prev, [optionKey]: (prev[optionKey] || 1) - 1 }));
     const key = config.inputs[optionKey].key(index);
-    onInputChange(platform, key, "");
-  }, [config.inputs, onInputChange, platform]);
+    if(config.inputs[optionKey].type === 'style' || config.inputs[optionKey].type === 'color') {
+        onTopLevelInputChange(key, key === 'sty' ? 'style1' : '#8b5cf6');
+    } else {
+        onInputChange(platform, key, "");
+    }
+  }, [config.inputs, onInputChange, platform, onTopLevelInputChange]);
 
   return (
     <motion.div
@@ -348,13 +372,71 @@ const PlatformInputs = memo(({
         ))}
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-4">
         {Object.keys(inputCounts).map((option) => {
           const count = inputCounts[option] || 0;
           return Array.from({ length: count }).map((_, i) => {
             const inputConfig = config.inputs[option];
             const key = inputConfig.key(i);
-            const savedValue = data?.[key] || "";
+            
+            if (inputConfig.type === 'style') {
+              return (
+                <div key="style-selector" className="mb-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <FaShapes /> Button Style
+                    </label>
+                    <button onClick={() => removeOption(option, i)} className="text-slate-600 hover:text-red-400 p-1 rounded-full hover:bg-red-400/10 transition-colors"><FaTimes size={10} /></button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {stylesConfig.map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => onTopLevelInputChange('sty', s.id)}
+                        className={`py-3 px-2 text-xs font-bold border transition-all ${
+                          formData.sty === s.id
+                            ? 'bg-slate-700 border-violet-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.3)]'
+                            : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-700'
+                        } rounded-xl`}
+                      >
+                        {s.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            if (inputConfig.type === 'color') {
+              return (
+                <div key="color-selector" className="mb-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <FaPalette /> Theme Color
+                    </label>
+                    <button onClick={() => removeOption(option, i)} className="text-slate-600 hover:text-red-400 p-1 rounded-full hover:bg-red-400/10 transition-colors"><FaTimes size={10} /></button>
+                  </div>
+                  <div className="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50 flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={formData.color || "#8b5cf6"}
+                      onChange={(e) => onTopLevelInputChange('color', e.target.value)}
+                      className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                    />
+                    <div className="flex-1 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                      {colorsConfig.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => onTopLevelInputChange('color', c)}
+                          className={`w-8 h-8 rounded-full border-2 flex-shrink-0 transition-transform hover:scale-110 ${formData.color === c ? 'border-white scale-110' : 'border-transparent'}`}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
             
             return (
               <AnimatedInput
@@ -363,7 +445,7 @@ const PlatformInputs = memo(({
                 placeholder={inputConfig.placeholder(i)}
                 type={inputConfig.type || "text"}
                 accept={inputConfig.accept}
-                value={inputConfig.type !== 'file' ? savedValue : undefined} 
+                value={inputConfig.type !== 'file' ? (data?.[key] || "") : undefined} 
                 onChange={(e) => {
                   if (inputConfig.key(0) === "thumb" && e.target.files) {
                     uploadImage(platform, inputConfig.key(0), e.target.files[0]);
@@ -371,7 +453,7 @@ const PlatformInputs = memo(({
                     onInputChange(platform, key, e.target.value);
                   }
                 }}
-                onRemove={platform !== "Advance Option" || inputConfig.type !== "file" ? () => removeOption(option, i) : undefined}
+                onRemove={platform !== "Advance Option" || !['style', 'color', 'file'].includes(inputConfig.type) ? () => removeOption(option, i) : undefined}
                 error={errors[key]}
               />
             );
@@ -463,7 +545,7 @@ const Home: React.FC = () => {
     }));
   }, []);
 
-  const handleTopLevelInputChange = (key: string, value: string) => {
+  const handleTopLevelInputChange = useCallback((key: string, value: string) => {
     setFormData((prev) => {
       if (key === "tlink1") {
         const error = value && !isValidUrl(value) ? "Invalid URL" : "";
@@ -472,7 +554,7 @@ const Home: React.FC = () => {
       }
       return { ...prev, [key]: value };
     });
-  };
+  }, []);
 
   const uploadImageToGitHub = async (platform: string, key: string, file: File) => {
     setModalState({ isOpen: true, type: "loading", message: "Uploading thumbnail..." });
@@ -563,18 +645,6 @@ const Home: React.FC = () => {
     return items;
   };
 
-  const styles = [
-      { id: 'style1', name: 'Rounded', class: 'rounded-full' },
-      { id: 'style2', name: 'Box', class: 'rounded-lg' },
-      { id: 'style3', name: 'Glass', class: 'backdrop-blur-md border border-white/20 rounded-xl' },
-      { id: 'style4', name: 'Neo', class: 'rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' },
-      { id: 'style5', name: '3D', class: 'rounded-xl border-b-[4px] border-black/20' },
-  ];
-
-  const colors = [
-      '#8b5cf6', '#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#ec4899', '#6366f1'
-  ];
-
   return (
     <div className="w-full min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-violet-500/30 selection:text-violet-200 pb-20 relative overflow-x-hidden">
       
@@ -661,66 +731,17 @@ const Home: React.FC = () => {
                 platform={platform}
                 data={formData[platform] || {}}
                 onInputChange={handleInputChange}
+                onTopLevelInputChange={handleTopLevelInputChange}
                 uploadImage={uploadImageToGitHub}
                 errors={errors[platform] || {}}
                 onRemovePlatform={() => togglePlatform(platform)}
+                formData={formData}
               />
             ))}
           </AnimatePresence>
 
           <div className="mt-10 pt-8 border-t border-slate-700/50">
              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-500"></span> Appearance
-             </h3>
-             
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                   <label className="text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-widest block flex items-center gap-2">
-                      <FaShapes /> Button Style
-                   </label>
-                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {styles.map((s) => (
-                          <button
-                             key={s.id}
-                             onClick={() => handleTopLevelInputChange('sty', s.id)}
-                             className={`py-3 px-2 text-xs font-bold border transition-all ${
-                                 formData.sty === s.id 
-                                 ? 'bg-slate-700 border-violet-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.3)]' 
-                                 : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-700'
-                             } rounded-xl`}
-                          >
-                             {s.name}
-                          </button>
-                      ))}
-                   </div>
-                </div>
-
-                <div>
-                   <label className="text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-widest block flex items-center gap-2">
-                      <FaPalette /> Theme Color
-                   </label>
-                   <div className="bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50 flex items-center gap-3">
-                      <input 
-                        type="color" 
-                        value={formData.color || "#8b5cf6"}
-                        onChange={(e) => handleTopLevelInputChange('color', e.target.value)}
-                        className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
-                      />
-                      <div className="flex-1 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                         {colors.map((c) => (
-                            <button 
-                               key={c}
-                               onClick={() => handleTopLevelInputChange('color', c)}
-                               className={`w-8 h-8 rounded-full border-2 flex-shrink-0 transition-transform hover:scale-110 ${formData.color === c ? 'border-white scale-110' : 'border-transparent'}`}
-                               style={{ backgroundColor: c }}
-                            />
-                         ))}
-                      </div>
-                   </div>
-                </div>
-             </div>
-
-             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2 pt-4 border-t border-slate-700/50">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Final Destination
              </h3>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
