@@ -1,11 +1,15 @@
 import React from 'react';
 import { FaLink, FaHeart } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import InstallPWA from '../components/InstallPWA'; // Import komponen PWA
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-purple-500 selection:text-white">
       
+      {/* PWA Install Banner */}
+      <InstallPWA />
+
       {/* Background decoration */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] opacity-50"></div>
