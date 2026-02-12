@@ -9,10 +9,10 @@ import {
 } from "react-icons/fa";
 import { IconType } from "react-icons";
 import { motion, AnimatePresence } from "framer-motion";
+import { SEO } from "../components/SEO";
 
 const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
-// Ganti URL ini sesuai lokasi file githubtoken.php Anda
 const GITHUB_TOKEN_URL = "https://myapi.videyhost.my.id/githubtoken.php"; 
 const STORAGE_KEY = "subs4unlock_form_state_final";
 
@@ -630,276 +630,283 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-violet-500/30 selection:text-violet-200 pb-20 relative overflow-x-hidden">
-      
-      <div className="fixed top-0 left-0 w-full h-screen pointer-events-none z-0">
-          <div className="absolute top-[10%] left-[10%] w-[30rem] h-[30rem] bg-violet-600/10 rounded-full blur-[100px]"></div>
-          <div className="absolute bottom-[20%] right-[5%] w-[20rem] h-[20rem] bg-blue-600/10 rounded-full blur-[80px]"></div>
-      </div>
-
-      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6">
+    <>
+      <SEO 
+        title="Subs 4 Unlock - Unlock Links with Social Subscriptions" 
+        description="Easily unlock links with Subs 4 Unlock! Use Sub to Unlock, Subs 2 Unlock, or Sub Unlock Link for secure access via YouTube, WhatsApp, and more."
+        url="/"
+      />
+      <div className="w-full min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-violet-500/30 selection:text-violet-200 pb-20 relative overflow-x-hidden">
         
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/60 shadow-2xl rounded-[2rem] p-6 sm:p-8 mt-6 relative"
-        >
-          <div className="flex justify-end absolute top-6 right-6 z-20">
-             <button 
-                onClick={clearForm}
-                className="text-slate-500 hover:text-red-400 p-2 rounded-full hover:bg-slate-800 transition-colors"
-                title="Reset Form"
-             >
-                <FaTrash size={16} />
-             </button>
-             <div className="text-slate-600 flex items-center gap-1 text-xs font-mono ml-2 py-2">
-                <FaSave size={12}/> Auto-saved
-             </div>
-          </div>
+        <div className="fixed top-0 left-0 w-full h-screen pointer-events-none z-0">
+            <div className="absolute top-[10%] left-[10%] w-[30rem] h-[30rem] bg-violet-600/10 rounded-full blur-[100px]"></div>
+            <div className="absolute bottom-[20%] right-[5%] w-[20rem] h-[20rem] bg-blue-600/10 rounded-full blur-[80px]"></div>
+        </div>
 
-          <div className="mb-10 mt-2 space-y-6">
-             <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 mb-6">
-                Create Project
-             </h2>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <AnimatedInput 
-                   icon={FaHeading} 
-                   label="Title" 
-                   placeholder="Project Title (e.g. Script v2)" 
-                   inputId="title"
-                   value={formData.title || ""}
-                   onChange={(e) => handleTopLevelInputChange("title", e.target.value)} 
-                />
-                <AnimatedInput 
-                   icon={FaSubscript} 
-                   label="Subtitle" 
-                   placeholder="Description (Optional)" 
-                   inputId="subtitle"
-                   value={formData.subtitle || ""}
-                   onChange={(e) => handleTopLevelInputChange("subtitle", e.target.value)} 
-                />
-             </div>
-          </div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/60 shadow-2xl rounded-[2rem] p-6 sm:p-8 mt-6 relative"
+          >
+            <div className="flex justify-end absolute top-6 right-6 z-20">
+              <button 
+                  onClick={clearForm}
+                  className="text-slate-500 hover:text-red-400 p-2 rounded-full hover:bg-slate-800 transition-colors"
+                  title="Reset Form"
+              >
+                  <FaTrash size={16} />
+              </button>
+              <div className="text-slate-600 flex items-center gap-1 text-xs font-mono ml-2 py-2">
+                  <FaSave size={12}/> Auto-saved
+              </div>
+            </div>
 
-          <div className="mb-8">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-               <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Select Platforms
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {socialButtons.map(({ text, icon: Icon }, index) => (
-                <button
-                  key={text}
-                  onClick={() => togglePlatform(text)}
-                  className={`group relative flex flex-col items-center justify-center gap-2 py-3 px-2 rounded-2xl border transition-all duration-300 ${
-                    activePlatforms.includes(text)
-                      ? "bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-500/25 scale-[1.02]"
-                      : "bg-slate-800/40 border-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white hover:border-slate-500"
-                  } ${
-                    index === socialButtons.length - 1 ? 'col-span-2 sm:col-span-1' : ''
-                  }`}
-                >
-                  <Icon className={`text-xl mb-0.5 transition-transform group-hover:scale-110 ${activePlatforms.includes(text) ? "text-white" : ""}`} />
-                  <span className="text-[10px] font-bold uppercase tracking-wide">{text}</span>
-                  {activePlatforms.includes(text) && (
-                    <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_5px_white]"></span>
-                  )}
-                </button>
+            <div className="mb-10 mt-2 space-y-6">
+              <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 mb-6">
+                  Create Project
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <AnimatedInput 
+                    icon={FaHeading} 
+                    label="Title" 
+                    placeholder="Project Title (e.g. Script v2)" 
+                    inputId="title"
+                    value={formData.title || ""}
+                    onChange={(e) => handleTopLevelInputChange("title", e.target.value)} 
+                  />
+                  <AnimatedInput 
+                    icon={FaSubscript} 
+                    label="Subtitle" 
+                    placeholder="Description (Optional)" 
+                    inputId="subtitle"
+                    value={formData.subtitle || ""}
+                    onChange={(e) => handleTopLevelInputChange("subtitle", e.target.value)} 
+                  />
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Select Platforms
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {socialButtons.map(({ text, icon: Icon }, index) => (
+                  <button
+                    key={text}
+                    onClick={() => togglePlatform(text)}
+                    className={`group relative flex flex-col items-center justify-center gap-2 py-3 px-2 rounded-2xl border transition-all duration-300 ${
+                      activePlatforms.includes(text)
+                        ? "bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-500/25 scale-[1.02]"
+                        : "bg-slate-800/40 border-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white hover:border-slate-500"
+                    } ${
+                      index === socialButtons.length - 1 ? 'col-span-2 sm:col-span-1' : ''
+                    }`}
+                  >
+                    <Icon className={`text-xl mb-0.5 transition-transform group-hover:scale-110 ${activePlatforms.includes(text) ? "text-white" : ""}`} />
+                    <span className="text-[10px] font-bold uppercase tracking-wide">{text}</span>
+                    {activePlatforms.includes(text) && (
+                      <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_5px_white]"></span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {activePlatforms.map((platform) => (
+                <PlatformInputs
+                  key={platform}
+                  platform={platform}
+                  data={platform === "Target Link" ? formData.targetLinks : (formData[platform] || {})}
+                  onInputChange={handleInputChange}
+                  onTopLevelInputChange={handleTopLevelInputChange}
+                  uploadImage={uploadImageToGitHub}
+                  errors={errors[platform] || {}}
+                  onRemovePlatform={() => togglePlatform(platform)}
+                  formData={formData}
+                />
               ))}
+            </AnimatePresence>
+
+            <div className="mt-10 pt-8 border-t border-slate-700/50">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Final Destination
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <AnimatedInput
+                      icon={FaLink}
+                      label="Unlock Button Text"
+                      placeholder="e.g. Get Link / Unlock"
+                      inputId="buttonName"
+                      value={formData.buttonName || ""}
+                      onChange={(e) => handleTopLevelInputChange("buttonName", e.target.value)}
+                  />
+                  <AnimatedInput
+                      icon={FaLock}
+                      label="Locked URL (Goal)"
+                      placeholder="https://drive.google.com/..."
+                      inputId="tlink1"
+                      value={formData.targetLinks?.tlink1 || ""}
+                      error={errors.targetLinks?.tlink1}
+                      onChange={(e) => handleTopLevelInputChange("tlink1", e.target.value)}
+                  />
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={generateLink}
+                disabled={loading}
+                className="flex-1 bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 text-white font-bold py-4 rounded-xl shadow-xl shadow-violet-900/20 transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center gap-2 border border-violet-500/30"
+              >
+                {loading ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"/> : <FaLock />}
+                {loading ? "Generating..." : "GENERATE LINK"}
+              </button>
+              <button
+                onClick={() => setPreviewModalOpen(true)}
+                disabled={loading}
+                className="flex-1 sm:flex-none sm:w-40 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl border border-slate-600 transition-all active:scale-[0.98] flex justify-center items-center gap-2"
+              >
+                <FaEye /> Preview
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {generatedKey && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-6 overflow-hidden"
+                >
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5">
+                      <p className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <FaCheckCircle /> Success! Your Link is Ready
+                      </p>
+                      <div className="flex items-center gap-2 bg-slate-950/80 rounded-xl p-2 pr-3 border border-emerald-500/20 shadow-inner">
+                        <div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-400">
+                            <FaLink size={14}/>
+                        </div>
+                        <input
+                          readOnly
+                          value={`${window.location.protocol}//${window.location.hostname}/${generatedKey}`}
+                          className="bg-transparent flex-1 text-slate-200 text-sm font-mono outline-none px-2 truncate"
+                          onClick={(e) => (e.target as HTMLInputElement).select()}
+                        />
+                        <button onClick={copyToClipboard} className="bg-emerald-600 hover:bg-emerald-500 text-white p-2 rounded-lg transition-colors shadow-lg shadow-emerald-600/20">
+                          <FaCopy size={14} />
+                        </button>
+                      </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+        </div>
+
+        <Modal isOpen={modalState.isOpen} onClose={() => setModalState({ isOpen: false, type: "", message: "" })}>
+          <div className="flex flex-col items-center text-center py-6">
+              {modalState.type === "loading" && <div className="animate-spin rounded-full h-14 w-14 border-4 border-violet-500 border-t-transparent mb-6"></div>}
+              {modalState.type === "success" && <div className="text-emerald-500 text-6xl mb-4 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"><FaCheckCircle /></div>}
+              {modalState.type === "error" && <div className="text-rose-500 text-6xl mb-4 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]"><FaTimes /></div>}
+              <p className="text-lg font-bold text-slate-200 mb-2">{modalState.type === 'error' ? 'Oops!' : modalState.type === 'success' ? 'Awesome!' : 'Processing...'}</p>
+              <p className="text-sm text-slate-400 max-w-[80%]">{modalState.message}</p>
+          </div>
+        </Modal>
+
+        <Modal isOpen={previewModalOpen} onClose={() => setPreviewModalOpen(false)}>
+          <div className="flex flex-col items-center w-full">
+            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-6">Live Preview</h2>
+            
+            <div className="w-full max-w-[280px] bg-slate-950 rounded-[2.5rem] border-[6px] border-slate-800 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-slate-800 rounded-b-xl z-20"></div>
+                
+                <div className="p-5 pt-10 min-h-[450px] flex flex-col items-center text-center bg-gradient-to-b from-slate-900 to-slate-950">
+                  
+                  <div 
+                      className="w-16 h-16 rounded-2xl mb-4 shadow-lg flex items-center justify-center text-white text-2xl font-bold"
+                      style={{ backgroundColor: formData.color || '#8b5cf6', boxShadow: `0 10px 15px -3px ${formData.color}40` }}
+                  >
+                      S4U
+                  </div>
+                  
+                  {formData["Advance Option"]?.thumb && (
+                      <div className="w-full mb-4 rounded-xl overflow-hidden shadow-lg border border-slate-700/50">
+                        <img src={formData["Advance Option"].thumb} alt="Preview" className="w-full h-32 object-cover" />
+                      </div>
+                  )}
+
+                  <h3 className="text-base font-bold text-white mb-1 line-clamp-1 w-full">
+                      {formData.title || "Project Title"}
+                  </h3>
+                  <p className="text-[10px] text-slate-400 mb-6 line-clamp-2 w-full px-2">
+                      {formData.subtitle || "Complete the steps below to unlock the link."}
+                  </p>
+
+                  <div className="w-full space-y-2.5 flex-1">
+                      {getPreviewItems().map((item, idx) => {
+                        const Icon = getActionIcon(item.platform, item.key);
+                        
+                        let btnClasses = "rounded-full";
+                        let iconBg = "bg-white/20";
+                        let activeStyle = formData.sty || 'style1';
+                        
+                        if (activeStyle === 'style2') { 
+                          btnClasses = "rounded-lg";
+                        } else if (activeStyle === 'style3') { 
+                          btnClasses = "backdrop-blur-md border border-white/20 rounded-xl";
+                        } else if (activeStyle === 'style4') { 
+                          btnClasses = "rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]";
+                          iconBg = "bg-black/20";
+                        } else if (activeStyle === 'style5') { 
+                          btnClasses = "rounded-xl border-b-[4px] border-black/20";
+                        }
+
+                        return (
+                            <div 
+                              key={idx} 
+                              className={`flex items-center gap-3 p-2.5 text-left transition-transform active:scale-[0.98] ${btnClasses}`}
+                              style={{ 
+                                  backgroundColor: formData.color || '#8b5cf6'
+                              }}
+                            >
+                              <div className={`${iconBg} p-2 rounded-lg text-white`}>
+                                  <Icon size={12}/>
+                              </div>
+                              <span className="flex-1 text-[10px] font-bold text-white truncate drop-shadow-sm">
+                                  {getFriendlyActionName(item.platform, item.key)}
+                              </span>
+                              <FaArrowRight size={10} className="text-white/80 mr-1"/>
+                            </div>
+                        );
+                      })}
+                  </div>
+
+                  <div className="w-full mt-6 pt-4 border-t border-slate-800/50">
+                      <button 
+                          className="w-full text-white py-3 text-xs font-bold opacity-50 cursor-not-allowed flex justify-center items-center gap-2 transition-all"
+                          style={{ 
+                              backgroundColor: '#10b981', 
+                              borderRadius: formData.sty === 'style1' ? '9999px' : 
+                                            formData.sty === 'style2' ? '0.5rem' : '0.75rem',
+                              boxShadow: formData.sty === 'style4' ? '4px 4px 0px 0px rgba(0,0,0,0.4)' : 'none',
+                              border: formData.sty === 'style4' ? '2px solid #064e3b' : 'none', 
+                              borderBottom: formData.sty === 'style5' ? '4px solid rgba(0,0,0,0.2)' : 'none'
+                          }}
+                      >
+                        <FaLock size={10} /> {formData.buttonName || "Get Link"}
+                      </button>
+                  </div>
+                </div>
             </div>
           </div>
-
-          <AnimatePresence>
-            {activePlatforms.map((platform) => (
-              <PlatformInputs
-                key={platform}
-                platform={platform}
-                data={platform === "Target Link" ? formData.targetLinks : (formData[platform] || {})}
-                onInputChange={handleInputChange}
-                onTopLevelInputChange={handleTopLevelInputChange}
-                uploadImage={uploadImageToGitHub}
-                errors={errors[platform] || {}}
-                onRemovePlatform={() => togglePlatform(platform)}
-                formData={formData}
-              />
-            ))}
-          </AnimatePresence>
-
-          <div className="mt-10 pt-8 border-t border-slate-700/50">
-             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Final Destination
-             </h3>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                 <AnimatedInput
-                    icon={FaLink}
-                    label="Unlock Button Text"
-                    placeholder="e.g. Get Link / Unlock"
-                    inputId="buttonName"
-                    value={formData.buttonName || ""}
-                    onChange={(e) => handleTopLevelInputChange("buttonName", e.target.value)}
-                 />
-                 <AnimatedInput
-                    icon={FaLock}
-                    label="Locked URL (Goal)"
-                    placeholder="https://drive.google.com/..."
-                    inputId="tlink1"
-                    value={formData.targetLinks?.tlink1 || ""}
-                    error={errors.targetLinks?.tlink1}
-                    onChange={(e) => handleTopLevelInputChange("tlink1", e.target.value)}
-                 />
-             </div>
-          </div>
-
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
-             <button
-               onClick={generateLink}
-               disabled={loading}
-               className="flex-1 bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 text-white font-bold py-4 rounded-xl shadow-xl shadow-violet-900/20 transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center gap-2 border border-violet-500/30"
-             >
-               {loading ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"/> : <FaLock />}
-               {loading ? "Generating..." : "GENERATE LINK"}
-             </button>
-             <button
-               onClick={() => setPreviewModalOpen(true)}
-               disabled={loading}
-               className="flex-1 sm:flex-none sm:w-40 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl border border-slate-600 transition-all active:scale-[0.98] flex justify-center items-center gap-2"
-             >
-               <FaEye /> Preview
-             </button>
-          </div>
-
-          <AnimatePresence>
-            {generatedKey && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-6 overflow-hidden"
-              >
-                 <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5">
-                    <p className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-                      <FaCheckCircle /> Success! Your Link is Ready
-                    </p>
-                    <div className="flex items-center gap-2 bg-slate-950/80 rounded-xl p-2 pr-3 border border-emerald-500/20 shadow-inner">
-                      <div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-400">
-                          <FaLink size={14}/>
-                      </div>
-                      <input
-                         readOnly
-                         value={`${window.location.protocol}//${window.location.hostname}/${generatedKey}`}
-                         className="bg-transparent flex-1 text-slate-200 text-sm font-mono outline-none px-2 truncate"
-                         onClick={(e) => (e.target as HTMLInputElement).select()}
-                      />
-                      <button onClick={copyToClipboard} className="bg-emerald-600 hover:bg-emerald-500 text-white p-2 rounded-lg transition-colors shadow-lg shadow-emerald-600/20">
-                         <FaCopy size={14} />
-                      </button>
-                    </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+        </Modal>
 
       </div>
-
-      <Modal isOpen={modalState.isOpen} onClose={() => setModalState({ isOpen: false, type: "", message: "" })}>
-         <div className="flex flex-col items-center text-center py-6">
-            {modalState.type === "loading" && <div className="animate-spin rounded-full h-14 w-14 border-4 border-violet-500 border-t-transparent mb-6"></div>}
-            {modalState.type === "success" && <div className="text-emerald-500 text-6xl mb-4 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"><FaCheckCircle /></div>}
-            {modalState.type === "error" && <div className="text-rose-500 text-6xl mb-4 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]"><FaTimes /></div>}
-            <p className="text-lg font-bold text-slate-200 mb-2">{modalState.type === 'error' ? 'Oops!' : modalState.type === 'success' ? 'Awesome!' : 'Processing...'}</p>
-            <p className="text-sm text-slate-400 max-w-[80%]">{modalState.message}</p>
-         </div>
-      </Modal>
-
-      <Modal isOpen={previewModalOpen} onClose={() => setPreviewModalOpen(false)}>
-        <div className="flex flex-col items-center w-full">
-           <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-6">Live Preview</h2>
-           
-           <div className="w-full max-w-[280px] bg-slate-950 rounded-[2.5rem] border-[6px] border-slate-800 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-slate-800 rounded-b-xl z-20"></div>
-              
-              <div className="p-5 pt-10 min-h-[450px] flex flex-col items-center text-center bg-gradient-to-b from-slate-900 to-slate-950">
-                 
-                 <div 
-                    className="w-16 h-16 rounded-2xl mb-4 shadow-lg flex items-center justify-center text-white text-2xl font-bold"
-                    style={{ backgroundColor: formData.color || '#8b5cf6', boxShadow: `0 10px 15px -3px ${formData.color}40` }}
-                 >
-                    S4U
-                 </div>
-                 
-                 {formData["Advance Option"]?.thumb && (
-                    <div className="w-full mb-4 rounded-xl overflow-hidden shadow-lg border border-slate-700/50">
-                       <img src={formData["Advance Option"].thumb} alt="Preview" className="w-full h-32 object-cover" />
-                    </div>
-                 )}
-
-                 <h3 className="text-base font-bold text-white mb-1 line-clamp-1 w-full">
-                    {formData.title || "Project Title"}
-                 </h3>
-                 <p className="text-[10px] text-slate-400 mb-6 line-clamp-2 w-full px-2">
-                    {formData.subtitle || "Complete the steps below to unlock the link."}
-                 </p>
-
-                 <div className="w-full space-y-2.5 flex-1">
-                    {getPreviewItems().map((item, idx) => {
-                       const Icon = getActionIcon(item.platform, item.key);
-                       
-                       let btnClasses = "rounded-full";
-                       let iconBg = "bg-white/20";
-                       let activeStyle = formData.sty || 'style1';
-                       
-                       if (activeStyle === 'style2') { 
-                         btnClasses = "rounded-lg";
-                       } else if (activeStyle === 'style3') { 
-                         btnClasses = "backdrop-blur-md border border-white/20 rounded-xl";
-                       } else if (activeStyle === 'style4') { 
-                         btnClasses = "rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]";
-                         iconBg = "bg-black/20";
-                       } else if (activeStyle === 'style5') { 
-                         btnClasses = "rounded-xl border-b-[4px] border-black/20";
-                       }
-
-                       return (
-                          <div 
-                             key={idx} 
-                             className={`flex items-center gap-3 p-2.5 text-left transition-transform active:scale-[0.98] ${btnClasses}`}
-                             style={{ 
-                                 backgroundColor: formData.color || '#8b5cf6'
-                             }}
-                          >
-                             <div className={`${iconBg} p-2 rounded-lg text-white`}>
-                                <Icon size={12}/>
-                             </div>
-                             <span className="flex-1 text-[10px] font-bold text-white truncate drop-shadow-sm">
-                                {getFriendlyActionName(item.platform, item.key)}
-                             </span>
-                             <FaArrowRight size={10} className="text-white/80 mr-1"/>
-                          </div>
-                       );
-                    })}
-                 </div>
-
-                 <div className="w-full mt-6 pt-4 border-t border-slate-800/50">
-                    <button 
-                        className="w-full text-white py-3 text-xs font-bold opacity-50 cursor-not-allowed flex justify-center items-center gap-2 transition-all"
-                        style={{ 
-                            backgroundColor: '#10b981', 
-                            borderRadius: formData.sty === 'style1' ? '9999px' : 
-                                          formData.sty === 'style2' ? '0.5rem' : '0.75rem',
-                            boxShadow: formData.sty === 'style4' ? '4px 4px 0px 0px rgba(0,0,0,0.4)' : 'none',
-                            border: formData.sty === 'style4' ? '2px solid #064e3b' : 'none', 
-                            borderBottom: formData.sty === 'style5' ? '4px solid rgba(0,0,0,0.2)' : 'none'
-                        }}
-                    >
-                       <FaLock size={10} /> {formData.buttonName || "Get Link"}
-                    </button>
-                 </div>
-              </div>
-           </div>
-        </div>
-      </Modal>
-
-    </div>
+    </>
   );
 };
 

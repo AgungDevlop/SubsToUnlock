@@ -5,6 +5,7 @@ import {
   FaInstagram, FaFacebook, FaLink, FaLock, FaComment,
   FaThumbsUp, FaUsers, FaEnvelope, FaAngleDoubleRight, FaCheck, FaExclamationTriangle
 } from 'react-icons/fa';
+import { SEO } from "../components/SEO";
 
 const API_URL = "https://myapi.videyhost.my.id/api.php";
 const API_TOKEN = "AgungDeveloper";
@@ -215,195 +216,191 @@ export function PageLink() {
     };
   };
 
-  if (loading) return (
-    <div className="flex flex-col justify-center items-center h-screen bg-slate-950">
-      <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-800 border-t-violet-500 mb-4"></div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="flex flex-col justify-center items-center h-screen text-center bg-slate-950 p-6">
-      <FaExclamationTriangle className="text-4xl text-red-500 mb-4" />
-      <h2 className="text-xl font-bold text-slate-200 mb-2">Error</h2>
-      <p className="text-slate-500 mb-6 max-w-xs">{error}</p>
-      <button onClick={() => window.location.reload()} className="px-6 py-3 bg-violet-600 text-white rounded-xl font-bold">
-        Reload
-      </button>
-    </div>
-  );
-
   const data = responseData?.data?.data;
-  const activeStyle = data?.sty || 'style1';
-  const activeColor = data?.color || '#8b5cf6';
-  const expired = data?.["Advance Option"]?.exp && isExpired(data["Advance Option"].exp);
-
-  if (expired) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 text-center">
-         <FaLock className="text-5xl text-red-500 mb-4" />
-         <h1 className="text-2xl font-bold text-slate-200 mb-2">Link Expired</h1>
-      </div>
-    );
-  }
-
-  const socialPlatforms = ['YouTube', 'WhatsApp', 'Telegram', 'TikTok', 'Website', 'Instagram', 'Facebook'];
-  
-  const socialButtons = socialPlatforms.flatMap(platform => 
-    data?.[platform] ? Object.entries(data[platform]).map(([action, url]) => ({ platform, action, url })) : []
-  );
-
-  const targetButtons = data?.targetLinks ? Object.entries(data.targetLinks).map(([key, url]) => ({ platform: 'Target', action: key, url })) : [];
-  
-  const thumbnail = data?.["Advance Option"]?.thumb;
-  const allSocialActionsCompleted = activeButtonIndex >= socialButtons.length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col items-center p-4 sm:p-6 relative overflow-x-hidden">
+    <>
+      <SEO 
+        title={data?.title ? `${data.title} | Subs 4 Unlock` : "Loading... | Subs 4 Unlock"}
+        description={data?.subtitle || "Unlock this link by completing simple steps."}
+        url={window.location.pathname}
+        image={data?.["Advance Option"]?.thumb || undefined}
+      />
       
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/5 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/5 rounded-full blur-[120px]"></div>
-      </div>
-
-      {data?.["Advance Option"]?.note && (
-        <div className="w-full max-w-md mb-6 bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-2xl flex items-start gap-3 relative z-10">
-          <FaExclamationTriangle className="text-yellow-500 mt-1 shrink-0" />
-          <p className="text-sm text-yellow-200/90">{data["Advance Option"].note}</p>
+      {loading ? (
+        <div className="flex flex-col justify-center items-center h-screen bg-slate-950">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-800 border-t-violet-500 mb-4"></div>
         </div>
-      )}
-
-      <div className="w-full max-w-md mb-8 text-center relative z-10">
-        <div 
-            className="w-20 h-20 mx-auto rounded-3xl mb-6 flex items-center justify-center text-white text-3xl font-bold shadow-2xl"
-            style={{ 
-                background: `linear-gradient(135deg, ${activeColor}, ${activeColor}99)`,
-                boxShadow: `0 20px 40px -10px ${activeColor}55`
-            }}
-        >
-            {data?.title ? data.title.charAt(0).toUpperCase() : 'L'}
+      ) : error ? (
+        <div className="flex flex-col justify-center items-center h-screen text-center bg-slate-950 p-6">
+          <FaExclamationTriangle className="text-4xl text-red-500 mb-4" />
+          <h2 className="text-xl font-bold text-slate-200 mb-2">Error</h2>
+          <p className="text-slate-500 mb-6 max-w-xs">{error}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-3 bg-violet-600 text-white rounded-xl font-bold">
+            Reload
+          </button>
         </div>
-        
-        <h1 className="text-2xl font-bold mb-2 text-white">{data?.title || 'Unlock Link'}</h1>
-        <p className="text-sm text-slate-400 max-w-xs mx-auto leading-relaxed">{data?.subtitle}</p>
-      </div>
-
-      {thumbnail && (
-        <div className="w-full max-w-md mb-8 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative z-10">
-          <img
-            src={thumbnail === "thumbnail_placeholder" ? "https://via.placeholder.com/600x400/1e293b/94a3b8?text=No+Thumbnail" : thumbnail}
-            alt="Thumbnail"
-            className="w-full h-auto object-cover"
-          />
+      ) : data?.["Advance Option"]?.exp && isExpired(data["Advance Option"].exp) ? (
+        <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 text-center">
+            <FaLock className="text-5xl text-red-500 mb-4" />
+            <h1 className="text-2xl font-bold text-slate-200 mb-2">Link Expired</h1>
         </div>
-      )}
-
-      {passwordVerified ? (
-        <div className="w-full max-w-md relative z-10">
+      ) : (
+        <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col items-center p-4 sm:p-6 relative overflow-x-hidden">
           
-          {socialButtons.map(({ platform, action, url }, index) => {
-            const Icon = getIconForAction(platform, action);
-            const isActive = index <= activeButtonIndex;
-            const buttonKey = `${platform}-${action}`;
-            const state = buttonStates[buttonKey] || 'idle';
-            const isCompleted = state === 'completed';
+          <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
+              <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/5 rounded-full blur-[120px]"></div>
+              <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/5 rounded-full blur-[120px]"></div>
+          </div>
 
-            const { className, style, iconBg } = getButtonStyles(activeStyle, isActive, isCompleted, activeColor, false);
+          {data?.["Advance Option"]?.note && (
+            <div className="w-full max-w-md mb-6 bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-2xl flex items-start gap-3 relative z-10">
+              <FaExclamationTriangle className="text-yellow-500 mt-1 shrink-0" />
+              <p className="text-sm text-yellow-200/90">{data["Advance Option"].note}</p>
+            </div>
+          )}
 
-            return (
-              <div
-                key={buttonKey}
-                onClick={() => isActive && state === 'idle' && handleButtonClick(url as string, index, false, buttonKey)}
-                className={`${className} ${isActive && state === 'idle' ? 'cursor-pointer hover:brightness-110' : ''}`}
-                style={style}
-              >
-                <div className={`${iconBg} p-2 rounded-lg mr-4 shrink-0`}>
-                    <Icon className="text-lg" />
-                </div>
-                <div className="flex-1 text-sm font-bold truncate pr-2">
-                  {getButtonText(platform, action)}
-                </div>
-                
-                <div className="shrink-0">
-                  {state === 'loading' ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
-                  ) : isCompleted ? (
-                    <FaCheck className="w-4 h-4 text-white" />
-                  ) : (
-                    <FaAngleDoubleRight className={`w-4 h-4 ${isActive ? 'text-white/80 animate-pulse' : 'text-white/30'}`} />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-
-          {targetButtons.map(({ action, url }, index) => {
-            const isActive = allSocialActionsCompleted;
-            const buttonKey = `Target-${action}`;
-            const { className, style, iconBg } = getButtonStyles(activeStyle, isActive, false, activeColor, true);
-
-            return (
-              <div
-                key={buttonKey}
-                onClick={() => isActive && handleButtonClick(url as string, index, true, buttonKey)}
-                className={`${className} ${isActive ? 'cursor-pointer hover:brightness-110 mt-6' : 'mt-6'}`}
-                style={style}
-              >
-                <div className={`${iconBg} p-2 rounded-lg mr-4 shrink-0`}>
-                    <FaLock className="text-lg" />
-                </div>
-                <div className="flex-1 text-sm font-bold truncate">
-                  {getButtonText('Target', action, data?.buttonName)}
-                </div>
-                <div className="shrink-0">
-                     <FaLock className={`w-4 h-4 ${isActive ? 'text-white/80' : 'text-white/30'}`} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-xs text-center shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-fuchsia-600"></div>
-            
-            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaLock className="text-2xl text-violet-500" />
+          <div className="w-full max-w-md mb-8 text-center relative z-10">
+            <div 
+                className="w-20 h-20 mx-auto rounded-3xl mb-6 flex items-center justify-center text-white text-3xl font-bold shadow-2xl"
+                style={{ 
+                    background: `linear-gradient(135deg, ${data?.color || '#8b5cf6'}, ${(data?.color || '#8b5cf6')}99)`,
+                    boxShadow: `0 20px 40px -10px ${(data?.color || '#8b5cf6')}55`
+                }}
+            >
+                {data?.title ? data.title.charAt(0).toUpperCase() : 'L'}
             </div>
             
-            <h2 className="text-lg font-bold text-white mb-1">Protected Link</h2>
-            <p className="text-slate-500 text-xs mb-5">Please enter the password to continue.</p>
-            
-            <input
-              type="password"
-              value={passwordInput}
-              onChange={(e) => setPasswordInput(e.target.value)}
-              className="w-full px-4 py-3 mb-4 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-violet-500 transition-colors text-center placeholder-slate-600"
-              placeholder="Enter Password"
-            />
-            
-            {modalError && (
-                <div className="flex items-center justify-center gap-2 text-red-400 text-xs font-bold mb-4 bg-red-400/10 py-2 rounded-lg">
-                    <FaExclamationTriangle /> {modalError}
-                </div>
-            )}
-            
-            <button
-              onClick={verifyPassword}
-              className="w-full px-4 py-3 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-violet-600/20"
-            >
-              Unlock Content
-            </button>
+            <h1 className="text-2xl font-bold mb-2 text-white">{data?.title || 'Unlock Link'}</h1>
+            <p className="text-sm text-slate-400 max-w-xs mx-auto leading-relaxed">{data?.subtitle}</p>
           </div>
+
+          {data?.["Advance Option"]?.thumb && (
+            <div className="w-full max-w-md mb-8 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative z-10">
+              <img
+                src={data["Advance Option"].thumb === "thumbnail_placeholder" ? "https://via.placeholder.com/600x400/1e293b/94a3b8?text=No+Thumbnail" : data["Advance Option"].thumb}
+                alt="Thumbnail"
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          )}
+
+          {passwordVerified ? (
+            <div className="w-full max-w-md relative z-10">
+              
+              {['YouTube', 'WhatsApp', 'Telegram', 'TikTok', 'Website', 'Instagram', 'Facebook'].flatMap(platform => 
+                data?.[platform] ? Object.entries(data[platform]).map(([action, url]) => ({ platform, action, url })) : []
+              ).map(({ platform, action, url }, index) => {
+                const Icon = getIconForAction(platform, action);
+                const isActive = index <= activeButtonIndex;
+                const buttonKey = `${platform}-${action}`;
+                const state = buttonStates[buttonKey] || 'idle';
+                const isCompleted = state === 'completed';
+                const activeStyle = data?.sty || 'style1';
+                const activeColor = data?.color || '#8b5cf6';
+
+                const { className, style, iconBg } = getButtonStyles(activeStyle, isActive, isCompleted, activeColor, false);
+
+                return (
+                  <div
+                    key={buttonKey}
+                    onClick={() => isActive && state === 'idle' && handleButtonClick(url as string, index, false, buttonKey)}
+                    className={`${className} ${isActive && state === 'idle' ? 'cursor-pointer hover:brightness-110' : ''}`}
+                    style={style}
+                  >
+                    <div className={`${iconBg} p-2 rounded-lg mr-4 shrink-0`}>
+                        <Icon className="text-lg" />
+                    </div>
+                    <div className="flex-1 text-sm font-bold truncate pr-2">
+                      {getButtonText(platform, action)}
+                    </div>
+                    
+                    <div className="shrink-0">
+                      {state === 'loading' ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                      ) : isCompleted ? (
+                        <FaCheck className="w-4 h-4 text-white" />
+                      ) : (
+                        <FaAngleDoubleRight className={`w-4 h-4 ${isActive ? 'text-white/80 animate-pulse' : 'text-white/30'}`} />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {(data?.targetLinks ? Object.entries(data.targetLinks).map(([key, url]) => ({ platform: 'Target', action: key, url })) : []).map(({ action, url }, index) => {
+                const socialButtonsCount = ['YouTube', 'WhatsApp', 'Telegram', 'TikTok', 'Website', 'Instagram', 'Facebook'].reduce((acc, platform) => acc + (data?.[platform] ? Object.keys(data[platform]).length : 0), 0);
+                const isActive = activeButtonIndex >= socialButtonsCount;
+                const buttonKey = `Target-${action}`;
+                const activeStyle = data?.sty || 'style1';
+                const activeColor = data?.color || '#8b5cf6';
+                const { className, style, iconBg } = getButtonStyles(activeStyle, isActive, false, activeColor, true);
+
+                return (
+                  <div
+                    key={buttonKey}
+                    onClick={() => isActive && handleButtonClick(url as string, index, true, buttonKey)}
+                    className={`${className} ${isActive ? 'cursor-pointer hover:brightness-110 mt-6' : 'mt-6'}`}
+                    style={style}
+                  >
+                    <div className={`${iconBg} p-2 rounded-lg mr-4 shrink-0`}>
+                        <FaLock className="text-lg" />
+                    </div>
+                    <div className="flex-1 text-sm font-bold truncate">
+                      {getButtonText('Target', action, data?.buttonName)}
+                    </div>
+                    <div className="shrink-0">
+                        <FaLock className={`w-4 h-4 ${isActive ? 'text-white/80' : 'text-white/30'}`} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {showModal && (
+            <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-xs text-center shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-fuchsia-600"></div>
+                
+                <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FaLock className="text-2xl text-violet-500" />
+                </div>
+                
+                <h2 className="text-lg font-bold text-white mb-1">Protected Link</h2>
+                <p className="text-slate-500 text-xs mb-5">Please enter the password to continue.</p>
+                
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  className="w-full px-4 py-3 mb-4 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-violet-500 transition-colors text-center placeholder-slate-600"
+                  placeholder="Enter Password"
+                />
+                
+                {modalError && (
+                    <div className="flex items-center justify-center gap-2 text-red-400 text-xs font-bold mb-4 bg-red-400/10 py-2 rounded-lg">
+                        <FaExclamationTriangle /> {modalError}
+                    </div>
+                )}
+                
+                <button
+                  onClick={verifyPassword}
+                  className="w-full px-4 py-3 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-violet-600/20"
+                >
+                  Unlock Content
+                </button>
+              </div>
+            </div>
+          )}
+          
+          <footer className="mt-12 mb-6 text-center opacity-40">
+            <p className="text-[10px] text-slate-500">Protected by Subs4Unlock &copy; {new Date().getFullYear()}</p>
+          </footer>
+
         </div>
       )}
-      
-      <footer className="mt-12 mb-6 text-center opacity-40">
-        <p className="text-[10px] text-slate-500">Protected by Subs4Unlock &copy; {new Date().getFullYear()}</p>
-      </footer>
-
-    </div>
+    </>
   );
 }
 

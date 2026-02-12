@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { RouterProvider, createBrowserRouter, useRouteError } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import Home from "./pages/Home";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -12,13 +13,12 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 import { PageLink } from "./pages/PageLink";
 import { GetLink } from "./pages/GetLink";
 
-// ErrorFallback component with proper typing
 interface ErrorFallbackProps {
   error?: Error | null;
   errorInfo?: React.ErrorInfo | null;
 }
 
-const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo }) => {
+const ErrorFallback: React.FC<ErrorFallbackProps> = ({error}) => {
   const routeError = useRouteError() as Error | undefined;
   const displayError = error || routeError;
 
@@ -28,18 +28,6 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo }) => {
       <p className="mb-2">
         {displayError?.message || "Maaf, terjadi kesalahan yang tidak terduga."}
       </p>
-      {displayError && (
-        <div className="text-left bg-gray-100 p-4 rounded text-black mb-4 max-w-2xl mx-auto">
-          <p className="font-bold">Detail Error:</p>
-          <pre className="whitespace-pre-wrap">{displayError.toString()}</pre>
-          {errorInfo && (
-            <>
-              <p className="font-bold mt-2">Stack Trace:</p>
-              <pre className="whitespace-pre-wrap">{errorInfo.componentStack}</pre>
-            </>
-          )}
-        </div>
-      )}
       <button
         className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
         onClick={() => window.location.reload()}
@@ -50,62 +38,34 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo }) => {
   );
 };
 
-// Define the router
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     errorElement: <ErrorFallback />,
     children: [
-      {
-        index: true,
-        element: <Home />,
-        errorElement: <ErrorFallback />,
-      },
-      {
-        path: ":key",
-        element: <PageLink />,
-        errorElement: <ErrorFallback />,
-      },
-      {
-        path: "privacy-policy",
-        element: <PrivacyPolicy />,
-        errorElement: <ErrorFallback />,
-      },
-      {
-        path: "about-us",
-        element: <AboutUs />,
-        errorElement: <ErrorFallback />,
-      },
-      {
-        path: "contact",
-        element: <Contact />,
-        errorElement: <ErrorFallback />,
-      },
-      {
-        path: "terms-and-conditions",
-        element: <TermsAndConditions />,
-        errorElement: <ErrorFallback />,
-      },
-      {
-        path: "getlink",
-        element: <GetLink />,
-        errorElement: <ErrorFallback />,
-      },
+      { index: true, element: <Home /> },
+      { path: ":key", element: <PageLink /> },
+      { path: "privacy-policy", element: <PrivacyPolicy /> },
+      { path: "about-us", element: <AboutUs /> },
+      { path: "contact", element: <Contact /> },
+      { path: "terms-and-conditions", element: <TermsAndConditions /> },
+      { path: "getlink", element: <GetLink /> },
     ],
   },
 ]);
 
-// Render the app
 createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <ErrorBoundary
-      fallback={<ErrorFallback />}
-      onError={(error: Error, errorInfo: React.ErrorInfo) => {
-        console.error("Error caught by ErrorBoundary:", error, errorInfo);
-      }}
-    >
-      <RouterProvider router={router} />
-    </ErrorBoundary>
+    <HelmetProvider>
+      <ErrorBoundary
+        fallback={<ErrorFallback />}
+        onError={(error: Error, errorInfo: React.ErrorInfo) => {
+          console.error("Error caught by ErrorBoundary:", error, errorInfo);
+        }}
+      >
+        <RouterProvider router={router} />
+      </ErrorBoundary>
+    </HelmetProvider>
   </React.StrictMode>
 );
