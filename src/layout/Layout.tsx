@@ -1,33 +1,29 @@
 import React from 'react';
 import { FaLink, FaHeart } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import InstallPWA from '../components/InstallPWA'; // Import komponen PWA
+import InstallPWA from '../components/InstallPWA';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-purple-500 selection:text-white">
-      
-      {/* PWA Install Banner */}
       <InstallPWA />
-
-      {/* Background decoration */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+      
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none transform-gpu will-change-transform">
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] opacity-50"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] opacity-50"></div>
       </div>
 
-      {/* Header - Sticky with Glassmorphism */}
       <header className="fixed top-0 left-0 w-full z-50 border-b border-white/5 bg-slate-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-900/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            
-            {/* Logo Section */}
             <Link to="/" className="flex items-center group gap-3">
               <div className="relative flex-shrink-0">
                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-500"></div>
                 <img
                   src="/icon.webp"
                   alt="Subs 4 Unlock"
+                  width="44"
+                  height="44"
                   className="relative w-9 h-9 sm:w-11 sm:h-11 object-contain rounded-full bg-slate-900 p-0.5"
                 />
               </div>
@@ -41,7 +37,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
             </Link>
 
-            {/* Action Button */}
             <div className="flex items-center">
               <Link
                 to="/"
@@ -54,24 +49,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </span>
               </Link>
             </div>
-
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 sm:pt-28">
         <div className="animate-fade-in-up">
            {children}
         </div>
       </main>
 
-      {/* Modern Footer with Navigation */}
       <footer className="border-t border-white/5 bg-slate-900/40 backdrop-blur-md pt-10 pb-8 mt-auto relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            
-            {/* Copyright & Credits */}
             <div className="text-center md:text-left">
               <p className="text-slate-400 text-sm font-medium">
                 &copy; {new Date().getFullYear()} Subs 4 Unlock. All rights reserved.
@@ -80,39 +70,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 Made with <FaHeart className="text-red-500 w-3 h-3" /> by Agung Developer
               </p>
             </div>
-
-            {/* Footer Navigation */}
             <nav className="flex flex-wrap justify-center gap-x-6 gap-y-3">
-              <Link 
-                to="/about-us" 
-                className="text-sm text-slate-400 hover:text-purple-400 transition-colors duration-200"
-              >
-                About Us
-              </Link>
-              <Link 
-                to="/contact" 
-                className="text-sm text-slate-400 hover:text-purple-400 transition-colors duration-200"
-              >
-                Contact
-              </Link>
-              <Link 
-                to="/privacy-policy" 
-                className="text-sm text-slate-400 hover:text-purple-400 transition-colors duration-200"
-              >
-                Privacy Policy
-              </Link>
-              <Link 
-                to="/terms-and-conditions" 
-                className="text-sm text-slate-400 hover:text-purple-400 transition-colors duration-200"
-              >
-                Terms & Conditions
-              </Link>
+              <Link to="/about-us" className="text-sm text-slate-400 hover:text-purple-400 transition-colors duration-200">About Us</Link>
+              <Link to="/contact" className="text-sm text-slate-400 hover:text-purple-400 transition-colors duration-200">Contact</Link>
+              <Link to="/privacy-policy" className="text-sm text-slate-400 hover:text-purple-400 transition-colors duration-200">Privacy Policy</Link>
+              <Link to="/terms-and-conditions" className="text-sm text-slate-400 hover:text-purple-400 transition-colors duration-200">Terms & Conditions</Link>
             </nav>
-
           </div>
         </div>
       </footer>
-
     </div>
   );
 };

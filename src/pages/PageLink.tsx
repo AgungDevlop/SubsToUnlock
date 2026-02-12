@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
   FaYoutube, FaTelegram, FaTiktok, FaGlobe,
   FaInstagram, FaFacebook, FaLink, FaLock, FaComment,
@@ -217,6 +218,20 @@ export function PageLink() {
   };
 
   const data = responseData?.data?.data;
+  
+  const schemaData = data ? {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": data.title || "Subs 4 Unlock",
+    "description": data.subtitle || "Unlock exclusive content by completing steps.",
+    "url": window.location.href,
+    "image": data["Advance Option"]?.thumb || "https://subs4unlock.com/banner.webp",
+    "provider": {
+      "@type": "Organization",
+      "name": "Subs 4 Unlock",
+      "url": "https://subs4unlock.com"
+    }
+  } : null;
 
   return (
     <>
@@ -226,6 +241,14 @@ export function PageLink() {
         url={window.location.pathname}
         image={data?.["Advance Option"]?.thumb || undefined}
       />
+
+      {schemaData && (
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify(schemaData)}
+          </script>
+        </Helmet>
+      )}
       
       {loading ? (
         <div className="flex flex-col justify-center items-center h-screen bg-slate-950">
@@ -279,8 +302,9 @@ export function PageLink() {
             <div className="w-full max-w-md mb-8 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 relative z-10">
               <img
                 src={data["Advance Option"].thumb === "thumbnail_placeholder" ? "https://via.placeholder.com/600x400/1e293b/94a3b8?text=No+Thumbnail" : data["Advance Option"].thumb}
-                alt="Thumbnail"
+                alt={data.title || "Thumbnail"}
                 className="w-full h-auto object-cover"
+                loading="lazy"
               />
             </div>
           )}

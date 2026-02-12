@@ -1,24 +1,26 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./index.css";
 import { RouterProvider, createBrowserRouter, useRouteError } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import Home from "./pages/Home";
+import App from "./App";
+import "./index.css";
+import Loading from "./components/Loading";
 import ErrorBoundary from "./components/ErrorBoundary";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import AboutUs from "./pages/AboutUs";
-import Contact from "./pages/Contact";
-import TermsAndConditions from "./pages/TermsAndConditions";
-import { PageLink } from "./pages/PageLink";
-import { GetLink } from "./pages/GetLink";
+
+const Home = React.lazy(() => import("./pages/Home"));
+const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
+const AboutUs = React.lazy(() => import("./pages/AboutUs"));
+const Contact = React.lazy(() => import("./pages/Contact"));
+const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions"));
+const PageLink = React.lazy(() => import("./pages/PageLink").then(module => ({ default: module.PageLink })));
+const GetLink = React.lazy(() => import("./pages/GetLink").then(module => ({ default: module.GetLink })));
 
 interface ErrorFallbackProps {
   error?: Error | null;
   errorInfo?: React.ErrorInfo | null;
 }
 
-const ErrorFallback: React.FC<ErrorFallbackProps> = ({error}) => {
+const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error}) => {
   const routeError = useRouteError() as Error | undefined;
   const displayError = error || routeError;
 
@@ -30,13 +32,22 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({error}) => {
       </p>
       <button
         className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-        onClick={() => window.location.reload()}
+        onClick={() => {
+          window.history.replaceState({}, "", "/");
+          window.location.reload();
+        }}
       >
-        Muat Ulang Halaman
+        Kembali ke Beranda
       </button>
     </div>
   );
 };
+
+const currentPath = window.location.pathname;
+if (currentPath.endsWith("/index.html")) {
+  const newPath = currentPath.replace(/\/index\.html$/, "") || "/";
+  window.history.replaceState({}, "", newPath);
+}
 
 const router = createBrowserRouter([
   {
@@ -44,13 +55,62 @@ const router = createBrowserRouter([
     element: <App />,
     errorElement: <ErrorFallback />,
     children: [
-      { index: true, element: <Home /> },
-      { path: ":key", element: <PageLink /> },
-      { path: "privacy-policy", element: <PrivacyPolicy /> },
-      { path: "about-us", element: <AboutUs /> },
-      { path: "contact", element: <Contact /> },
-      { path: "terms-and-conditions", element: <TermsAndConditions /> },
-      { path: "getlink", element: <GetLink /> },
+      { 
+        index: true, 
+        element: (
+          <React.Suspense fallback={<Loading />}>
+            <Home />
+          </React.Suspense>
+        ) 
+      },
+      { 
+        path: "privacy-policy", 
+        element: (
+          <React.Suspense fallback={<Loading />}>
+            <PrivacyPolicy />
+          </React.Suspense>
+        ) 
+      },
+      { 
+        path: "about-us", 
+        element: (
+          <React.Suspense fallback={<Loading />}>
+            <AboutUs />
+          </React.Suspense>
+        ) 
+      },
+      { 
+        path: "contact", 
+        element: (
+          <React.Suspense fallback={<Loading />}>
+            <Contact />
+          </React.Suspense>
+        ) 
+      },
+      { 
+        path: "terms-and-conditions", 
+        element: (
+          <React.Suspense fallback={<Loading />}>
+            <TermsAndConditions />
+          </React.Suspense>
+        ) 
+      },
+      { 
+        path: "getlink", 
+        element: (
+          <React.Suspense fallback={<Loading />}>
+            <GetLink />
+          </React.Suspense>
+        ) 
+      },
+      { 
+        path: ":key", 
+        element: (
+          <React.Suspense fallback={<Loading />}>
+            <PageLink />
+          </React.Suspense>
+        ) 
+      },
     ],
   },
 ]);
