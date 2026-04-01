@@ -4,7 +4,7 @@ import { FaAngleDoubleRight, FaExclamationTriangle, FaLink, FaArrowLeft } from '
 import { SEO } from "../components/SEO";
 
 const randomLinks = [
-  "https://otieu.com/4/10055984",
+  "https://omg10.com/4/10055984",
 ];
 
 export function GetLink() {
