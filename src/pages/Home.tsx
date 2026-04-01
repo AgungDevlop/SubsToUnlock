@@ -81,12 +81,12 @@ interface SavedState {
 const Modal: React.FC<{ isOpen: boolean; onClose: () => void; children: React.ReactNode }> = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 sm:p-6">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="bg-slate-900 border border-slate-700/50 p-6 rounded-3xl shadow-2xl max-w-sm w-full relative overflow-hidden flex flex-col max-h-[90vh]"
+        className="bg-slate-900 border border-slate-700/50 p-5 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-2xl max-w-[95%] sm:max-w-sm md:max-w-md w-full relative overflow-hidden flex flex-col max-h-[90vh]"
       >
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-indigo-600"></div>
         <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -94,7 +94,7 @@ const Modal: React.FC<{ isOpen: boolean; onClose: () => void; children: React.Re
         </div>
         <button
           onClick={onClose}
-          className="mt-6 w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-3 px-4 rounded-xl transition-all duration-200 font-bold border border-slate-700/50"
+          className="mt-5 sm:mt-6 w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-3 sm:py-3.5 px-4 rounded-xl transition-all duration-200 font-bold border border-slate-700/50 text-sm sm:text-base"
         >
           Close
         </button>
@@ -130,11 +130,11 @@ const AnimatedInput = memo(({
   error,
   inputId,
 }: AnimatedInputProps) => (
-  <div className="relative mb-5 group/input">
-    {label && <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-widest ml-1">{label}</label>}
+  <div className="relative mb-4 sm:mb-5 group/input">
+    {label && <label className="block text-[10px] sm:text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-widest ml-1">{label}</label>}
     <div className="relative">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-violet-400 transition-colors duration-300">
-        <Icon />
+      <div className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-violet-400 transition-colors duration-300">
+        <Icon className="text-sm sm:text-base" />
       </div>
       <input
         id={inputId}
@@ -144,16 +144,16 @@ const AnimatedInput = memo(({
         onChange={onChange}
         disabled={disabled}
         value={value}
-        className={`w-full pl-12 pr-10 py-3.5 bg-slate-950/50 text-slate-200 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/30 placeholder-slate-600 disabled:opacity-50 transition-all duration-300 text-sm font-medium ${
+        className={`w-full pl-10 sm:pl-12 pr-10 py-3 sm:py-3.5 bg-slate-950/50 text-slate-200 border rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-500/30 placeholder-slate-600 disabled:opacity-50 transition-all duration-300 text-xs sm:text-sm font-medium ${
           error ? "border-red-500/50 focus:border-red-500" : "border-slate-800 focus:border-violet-500/50"
         }`}
       />
       {onRemove && (
         <button
           onClick={onRemove}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-red-400 p-1.5 rounded-full hover:bg-red-400/10 transition-colors"
+          className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-red-400 p-1.5 rounded-full hover:bg-red-400/10 transition-colors"
         >
-          <FaTimes size={12} />
+          <FaTimes size={12} className="sm:text-sm" />
         </button>
       )}
     </div>
@@ -163,9 +163,9 @@ const AnimatedInput = memo(({
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
-          className="text-red-400 text-[10px] font-semibold mt-1.5 ml-1 flex items-center gap-1.5"
+          className="text-red-400 text-[10px] sm:text-xs font-semibold mt-1.5 ml-1 flex items-center gap-1.5"
         >
-          <FaExclamationTriangle size={10} /> {error}
+          <FaExclamationTriangle size={10} className="sm:text-xs" /> {error}
         </motion.p>
       )}
     </AnimatePresence>
@@ -329,12 +329,12 @@ const PlatformInputs = memo(({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      className="bg-slate-800/30 backdrop-blur-md rounded-2xl p-5 border border-slate-700/50 mb-4 shadow-lg overflow-hidden relative"
+      className="bg-slate-800/30 backdrop-blur-md rounded-2xl p-4 sm:p-5 md:p-6 border border-slate-700/50 mb-4 sm:mb-5 shadow-lg overflow-hidden relative"
     >
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-violet-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="flex justify-between items-center mb-5 border-b border-slate-700/30 pb-3">
-        <h3 className="text-base font-bold text-slate-100 flex items-center gap-2.5">
+      <div className="flex justify-between items-center mb-4 sm:mb-5 border-b border-slate-700/30 pb-3">
+        <h3 className="text-sm sm:text-base font-bold text-slate-100 flex items-center gap-2 sm:gap-2.5">
           {platform === 'YouTube' && <FaYoutube className="text-red-500"/>}
           {platform === 'WhatsApp' && <FaWhatsapp className="text-green-500"/>}
           {platform === 'Telegram' && <FaTelegram className="text-sky-500"/>}
@@ -346,24 +346,24 @@ const PlatformInputs = memo(({
           {platform === 'Advance Option' && <FaLock className="text-yellow-500"/>}
           {platform}
         </h3>
-        <button onClick={onRemovePlatform} className="text-slate-500 hover:text-red-400 text-xs font-semibold px-2 py-1 rounded hover:bg-red-400/10 transition-colors">
+        <button onClick={onRemovePlatform} className="text-slate-500 hover:text-red-400 text-[10px] sm:text-xs font-semibold px-2 py-1 rounded hover:bg-red-400/10 transition-colors">
           Remove
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-5">
+      <div className="flex flex-wrap gap-2 sm:gap-2.5 mb-4 sm:mb-5">
         {config.options.map((opt: string) => (
           <button
             key={opt}
             onClick={() => addOption(opt)}
-            className="text-[10px] sm:text-xs font-semibold bg-slate-700/50 hover:bg-violet-600 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg transition-all duration-200 border border-slate-600/50 hover:border-violet-500/50 shadow-sm"
+            className="text-[10px] sm:text-xs font-semibold bg-slate-700/50 hover:bg-violet-600 text-slate-300 hover:text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-200 border border-slate-600/50 hover:border-violet-500/50 shadow-sm"
           >
             {opt}
           </button>
         ))}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {Object.keys(inputCounts).map((option) => {
           const count = inputCounts[option] || 0;
           return Array.from({ length: count }).map((_, i) => {
@@ -393,17 +393,17 @@ const PlatformInputs = memo(({
         })}
 
         {platform === "Advance Option" && (
-          <div className="pt-4 border-t border-slate-700/50 mt-4 space-y-6">
+          <div className="pt-4 sm:pt-5 border-t border-slate-700/50 mt-4 sm:mt-5 space-y-5 sm:space-y-6">
             <div key="style-selector">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-3">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-3">
                 <FaShapes /> Button Style
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                 {stylesConfig.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => onTopLevelInputChange('sty', s.id)}
-                    className={`py-3 px-2 text-xs font-bold border transition-all ${
+                    className={`py-2.5 sm:py-3 px-2 text-[10px] sm:text-xs font-bold border transition-all ${
                       formData.sty === s.id
                         ? 'bg-slate-700 border-violet-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.3)]'
                         : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-700'
@@ -416,22 +416,22 @@ const PlatformInputs = memo(({
             </div>
 
             <div key="color-selector">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-3">
+              <label className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-3">
                 <FaPalette /> Theme Color
               </label>
-              <div className="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50 flex items-center gap-3">
+              <div className="bg-slate-900/50 p-2 sm:p-3 rounded-2xl border border-slate-700/50 flex items-center gap-2 sm:gap-3">
                 <input
                   type="color"
                   value={formData.color || "#8b5cf6"}
                   onChange={(e) => onTopLevelInputChange('color', e.target.value)}
-                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
                 />
                 <div className="flex-1 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                   {colorsConfig.map((c) => (
                     <button
                       key={c}
                       onClick={() => onTopLevelInputChange('color', c)}
-                      className={`w-8 h-8 rounded-full border-2 flex-shrink-0 transition-transform hover:scale-110 ${formData.color === c ? 'border-white scale-110' : 'border-transparent'}`}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex-shrink-0 transition-transform hover:scale-110 ${formData.color === c ? 'border-white scale-110' : 'border-transparent'}`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
@@ -442,8 +442,8 @@ const PlatformInputs = memo(({
         )}
 
         {Object.keys(inputCounts).length === 0 && platform !== "Advance Option" && (
-          <div className="text-center py-6 border-2 border-dashed border-slate-700/50 rounded-xl">
-             <p className="text-slate-500 text-xs">Select an option above to add inputs</p>
+          <div className="text-center py-5 sm:py-6 border-2 border-dashed border-slate-700/50 rounded-xl">
+             <p className="text-slate-500 text-[10px] sm:text-xs">Select an option above to add inputs</p>
           </div>
         )}
       </div>
@@ -636,38 +636,38 @@ const Home: React.FC = () => {
         description="Easily unlock links with Subs 4 Unlock! Use Sub to Unlock, Subs 2 Unlock, or Sub Unlock Link for secure access via YouTube, WhatsApp, and more."
         url="/"
       />
-      <div className="w-full min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-violet-500/30 selection:text-violet-200 pb-20 relative overflow-x-hidden">
+      <div className="w-full min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-violet-500/30 selection:text-violet-200 pb-16 sm:pb-20 relative overflow-x-hidden">
         
         <div className="fixed top-0 left-0 w-full h-screen pointer-events-none z-0">
-            <div className="absolute top-[10%] left-[10%] w-[30rem] h-[30rem] bg-violet-600/10 rounded-full blur-[100px]"></div>
-            <div className="absolute bottom-[20%] right-[5%] w-[20rem] h-[20rem] bg-blue-600/10 rounded-full blur-[80px]"></div>
+            <div className="absolute top-[10%] left-[10%] w-[20rem] md:w-[30rem] h-[20rem] md:h-[30rem] bg-violet-600/10 rounded-full blur-[80px] md:blur-[100px]"></div>
+            <div className="absolute bottom-[20%] right-[5%] w-[15rem] md:w-[20rem] h-[15rem] md:h-[20rem] bg-blue-600/10 rounded-full blur-[60px] md:blur-[80px]"></div>
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
           
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/60 shadow-2xl rounded-[2rem] p-6 sm:p-8 mt-6 relative"
+            className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/60 shadow-2xl rounded-[1.5rem] md:rounded-[2rem] p-5 sm:p-8 md:p-10 mt-4 sm:mt-6 relative"
           >
-            <div className="flex justify-end absolute top-6 right-6 z-20">
+            <div className="flex justify-end absolute top-4 sm:top-6 right-4 sm:right-6 z-20">
               <button 
                   onClick={clearForm}
                   className="text-slate-500 hover:text-red-400 p-2 rounded-full hover:bg-slate-800 transition-colors"
                   title="Reset Form"
               >
-                  <FaTrash size={16} />
+                  <FaTrash className="text-sm sm:text-base" />
               </button>
-              <div className="text-slate-600 flex items-center gap-1 text-xs font-mono ml-2 py-2">
-                  <FaSave size={12}/> Auto-saved
+              <div className="text-slate-600 flex items-center gap-1 text-[10px] sm:text-xs font-mono ml-1 sm:ml-2 py-2">
+                  <FaSave size={12}/> <span className="hidden sm:inline">Auto-saved</span>
               </div>
             </div>
 
-            <div className="mb-10 mt-2 space-y-6">
-              <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 mb-6">
+            <div className="mb-8 sm:mb-10 mt-2 space-y-5 sm:space-y-6">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 mb-4 sm:mb-6 pr-16 sm:pr-0">
                   Create Project
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                   <AnimatedInput 
                     icon={FaHeading} 
                     label="Title" 
@@ -687,27 +687,25 @@ const Home: React.FC = () => {
               </div>
             </div>
 
-            <div className="mb-8">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <div className="mb-6 sm:mb-8">
+              <h3 className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Select Platforms
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {socialButtons.map(({ text, icon: Icon }, index) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-4">
+                {socialButtons.map(({ text, icon: Icon }) => (
                   <button
                     key={text}
                     onClick={() => togglePlatform(text)}
-                    className={`group relative flex flex-col items-center justify-center gap-2 py-3 px-2 rounded-2xl border transition-all duration-300 ${
+                    className={`group relative flex flex-col items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 rounded-xl sm:rounded-2xl border transition-all duration-300 ${
                       activePlatforms.includes(text)
                         ? "bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-500/25 scale-[1.02]"
                         : "bg-slate-800/40 border-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white hover:border-slate-500"
-                    } ${
-                      index === socialButtons.length - 1 ? 'col-span-2 sm:col-span-1' : ''
                     }`}
                   >
-                    <Icon className={`text-xl mb-0.5 transition-transform group-hover:scale-110 ${activePlatforms.includes(text) ? "text-white" : ""}`} />
-                    <span className="text-[10px] font-bold uppercase tracking-wide">{text}</span>
+                    <Icon className={`text-lg sm:text-xl mb-0.5 transition-transform group-hover:scale-110 ${activePlatforms.includes(text) ? "text-white" : ""}`} />
+                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-center leading-tight">{text}</span>
                     {activePlatforms.includes(text) && (
-                      <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_5px_white]"></span>
+                      <span className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full shadow-[0_0_5px_white]"></span>
                     )}
                   </button>
                 ))}
@@ -730,11 +728,11 @@ const Home: React.FC = () => {
               ))}
             </AnimatePresence>
 
-            <div className="mt-10 pt-8 border-t border-slate-700/50">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-slate-700/50">
+              <h3 className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Final Destination
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                   <AnimatedInput
                       icon={FaLink}
                       label="Unlock Button Text"
@@ -755,19 +753,19 @@ const Home: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={generateLink}
                 disabled={loading}
-                className="flex-1 bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 text-white font-bold py-4 rounded-xl shadow-xl shadow-violet-900/20 transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center gap-2 border border-violet-500/30"
+                className="flex-1 bg-gradient-to-br from-violet-600 to-indigo-700 hover:from-violet-500 hover:to-indigo-600 text-white font-bold py-3.5 sm:py-4 rounded-xl shadow-xl shadow-violet-900/20 transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center gap-2 border border-violet-500/30 text-sm sm:text-base"
               >
-                {loading ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"/> : <FaLock />}
+                {loading ? <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent"/> : <FaLock />}
                 {loading ? "Generating..." : "GENERATE LINK"}
               </button>
               <button
                 onClick={() => setPreviewModalOpen(true)}
                 disabled={loading}
-                className="flex-1 sm:flex-none sm:w-40 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl border border-slate-600 transition-all active:scale-[0.98] flex justify-center items-center gap-2"
+                className="flex-1 sm:flex-none sm:w-40 md:w-48 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 sm:py-4 rounded-xl border border-slate-600 transition-all active:scale-[0.98] flex justify-center items-center gap-2 text-sm sm:text-base"
               >
                 <FaEye /> Preview
               </button>
@@ -779,24 +777,24 @@ const Home: React.FC = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-6 overflow-hidden"
+                  className="mt-5 sm:mt-6 overflow-hidden"
                 >
-                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5">
-                      <p className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-5">
+                      <p className="text-emerald-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 sm:mb-3 flex items-center gap-2">
                         <FaCheckCircle /> Success! Your Link is Ready
                       </p>
-                      <div className="flex items-center gap-2 bg-slate-950/80 rounded-xl p-2 pr-3 border border-emerald-500/20 shadow-inner">
-                        <div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-400">
-                            <FaLink size={14}/>
+                      <div className="flex items-center gap-2 bg-slate-950/80 rounded-lg sm:rounded-xl p-1.5 sm:p-2 pr-2 sm:pr-3 border border-emerald-500/20 shadow-inner">
+                        <div className="bg-emerald-500/20 p-1.5 sm:p-2 rounded-md sm:rounded-lg text-emerald-400">
+                            <FaLink size={12} className="sm:text-sm"/>
                         </div>
                         <input
                           readOnly
                           value={`${window.location.protocol}//${window.location.hostname}/${generatedKey}`}
-                          className="bg-transparent flex-1 text-slate-200 text-sm font-mono outline-none px-2 truncate"
+                          className="bg-transparent flex-1 text-slate-200 text-xs sm:text-sm font-mono outline-none px-2 truncate"
                           onClick={(e) => (e.target as HTMLInputElement).select()}
                         />
-                        <button onClick={copyToClipboard} className="bg-emerald-600 hover:bg-emerald-500 text-white p-2 rounded-lg transition-colors shadow-lg shadow-emerald-600/20">
-                          <FaCopy size={14} />
+                        <button onClick={copyToClipboard} className="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 sm:p-2 rounded-md sm:rounded-lg transition-colors shadow-lg shadow-emerald-600/20">
+                          <FaCopy size={12} className="sm:text-sm" />
                         </button>
                       </div>
                   </div>
@@ -808,45 +806,45 @@ const Home: React.FC = () => {
         </div>
 
         <Modal isOpen={modalState.isOpen} onClose={() => setModalState({ isOpen: false, type: "", message: "" })}>
-          <div className="flex flex-col items-center text-center py-6">
-              {modalState.type === "loading" && <div className="animate-spin rounded-full h-14 w-14 border-4 border-violet-500 border-t-transparent mb-6"></div>}
-              {modalState.type === "success" && <div className="text-emerald-500 text-6xl mb-4 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"><FaCheckCircle /></div>}
-              {modalState.type === "error" && <div className="text-rose-500 text-6xl mb-4 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]"><FaTimes /></div>}
-              <p className="text-lg font-bold text-slate-200 mb-2">{modalState.type === 'error' ? 'Oops!' : modalState.type === 'success' ? 'Awesome!' : 'Processing...'}</p>
-              <p className="text-sm text-slate-400 max-w-[80%]">{modalState.message}</p>
+          <div className="flex flex-col items-center text-center py-4 sm:py-6">
+              {modalState.type === "loading" && <div className="animate-spin rounded-full h-10 w-10 sm:h-14 sm:w-14 border-4 border-violet-500 border-t-transparent mb-4 sm:mb-6"></div>}
+              {modalState.type === "success" && <div className="text-emerald-500 text-5xl sm:text-6xl mb-3 sm:mb-4 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"><FaCheckCircle /></div>}
+              {modalState.type === "error" && <div className="text-rose-500 text-5xl sm:text-6xl mb-3 sm:mb-4 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]"><FaTimes /></div>}
+              <p className="text-base sm:text-lg font-bold text-slate-200 mb-1 sm:mb-2">{modalState.type === 'error' ? 'Oops!' : modalState.type === 'success' ? 'Awesome!' : 'Processing...'}</p>
+              <p className="text-xs sm:text-sm text-slate-400 max-w-[90%] sm:max-w-[80%]">{modalState.message}</p>
           </div>
         </Modal>
 
         <Modal isOpen={previewModalOpen} onClose={() => setPreviewModalOpen(false)}>
           <div className="flex flex-col items-center w-full">
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-6">Live Preview</h2>
+            <h2 className="text-[10px] sm:text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 sm:mb-6">Live Preview</h2>
             
-            <div className="w-full max-w-[280px] bg-slate-950 rounded-[2.5rem] border-[6px] border-slate-800 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-slate-800 rounded-b-xl z-20"></div>
+            <div className="w-full max-w-[260px] sm:max-w-[280px] bg-slate-950 rounded-[2rem] sm:rounded-[2.5rem] border-[4px] sm:border-[6px] border-slate-800 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 sm:w-24 h-4 sm:h-5 bg-slate-800 rounded-b-lg sm:rounded-b-xl z-20"></div>
                 
-                <div className="p-5 pt-10 min-h-[450px] flex flex-col items-center text-center bg-gradient-to-b from-slate-900 to-slate-950">
+                <div className="p-4 sm:p-5 pt-8 sm:pt-10 min-h-[400px] sm:min-h-[450px] flex flex-col items-center text-center bg-gradient-to-b from-slate-900 to-slate-950">
                   
                   <div 
-                      className="w-16 h-16 rounded-2xl mb-4 shadow-lg flex items-center justify-center text-white text-2xl font-bold"
+                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl mb-3 sm:mb-4 shadow-lg flex items-center justify-center text-white text-xl sm:text-2xl font-bold"
                       style={{ backgroundColor: formData.color || '#8b5cf6', boxShadow: `0 10px 15px -3px ${formData.color}40` }}
                   >
                       S4U
                   </div>
                   
                   {formData["Advance Option"]?.thumb && (
-                      <div className="w-full mb-4 rounded-xl overflow-hidden shadow-lg border border-slate-700/50">
-                        <img src={formData["Advance Option"].thumb} alt="Preview" className="w-full h-32 object-cover" />
+                      <div className="w-full mb-3 sm:mb-4 rounded-lg sm:rounded-xl overflow-hidden shadow-lg border border-slate-700/50">
+                        <img src={formData["Advance Option"].thumb} alt="Preview" className="w-full h-28 sm:h-32 object-cover" />
                       </div>
                   )}
 
-                  <h3 className="text-base font-bold text-white mb-1 line-clamp-1 w-full">
+                  <h3 className="text-sm sm:text-base font-bold text-white mb-1 line-clamp-1 w-full">
                       {formData.title || "Project Title"}
                   </h3>
-                  <p className="text-[10px] text-slate-400 mb-6 line-clamp-2 w-full px-2">
+                  <p className="text-[9px] sm:text-[10px] text-slate-400 mb-4 sm:mb-6 line-clamp-2 w-full px-1 sm:px-2">
                       {formData.subtitle || "Complete the steps below to unlock the link."}
                   </p>
 
-                  <div className="w-full space-y-2.5 flex-1">
+                  <div className="w-full space-y-2 sm:space-y-2.5 flex-1">
                       {getPreviewItems().map((item, idx) => {
                         const Icon = getActionIcon(item.platform, item.key);
                         
@@ -857,37 +855,35 @@ const Home: React.FC = () => {
                         if (activeStyle === 'style2') { 
                           btnClasses = "rounded-lg";
                         } else if (activeStyle === 'style3') { 
-                          btnClasses = "backdrop-blur-md border border-white/20 rounded-xl";
+                          btnClasses = "backdrop-blur-md border border-white/20 rounded-lg sm:rounded-xl";
                         } else if (activeStyle === 'style4') { 
-                          btnClasses = "rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]";
+                          btnClasses = "rounded-lg sm:rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]";
                           iconBg = "bg-black/20";
                         } else if (activeStyle === 'style5') { 
-                          btnClasses = "rounded-xl border-b-[4px] border-black/20";
+                          btnClasses = "rounded-lg sm:rounded-xl border-b-[3px] sm:border-b-[4px] border-black/20";
                         }
 
                         return (
                             <div 
                               key={idx} 
-                              className={`flex items-center gap-3 p-2.5 text-left transition-transform active:scale-[0.98] ${btnClasses}`}
-                              style={{ 
-                                  backgroundColor: formData.color || '#8b5cf6'
-                              }}
+                              className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 text-left transition-transform active:scale-[0.98] ${btnClasses}`}
+                              style={{ backgroundColor: formData.color || '#8b5cf6' }}
                             >
-                              <div className={`${iconBg} p-2 rounded-lg text-white`}>
-                                  <Icon size={12}/>
+                              <div className={`${iconBg} p-1.5 sm:p-2 rounded-md sm:rounded-lg text-white`}>
+                                  <Icon size={10} className="sm:text-[12px]"/>
                               </div>
-                              <span className="flex-1 text-[10px] font-bold text-white truncate drop-shadow-sm">
+                              <span className="flex-1 text-[9px] sm:text-[10px] font-bold text-white truncate drop-shadow-sm">
                                   {getFriendlyActionName(item.platform, item.key)}
                               </span>
-                              <FaArrowRight size={10} className="text-white/80 mr-1"/>
+                              <FaArrowRight size={8} className="text-white/80 mr-1 sm:text-[10px]"/>
                             </div>
                         );
                       })}
                   </div>
 
-                  <div className="w-full mt-6 pt-4 border-t border-slate-800/50">
+                  <div className="w-full mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-800/50">
                       <button 
-                          className="w-full text-white py-3 text-xs font-bold opacity-50 cursor-not-allowed flex justify-center items-center gap-2 transition-all"
+                          className="w-full text-white py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold opacity-50 cursor-not-allowed flex justify-center items-center gap-1.5 sm:gap-2 transition-all"
                           style={{ 
                               backgroundColor: '#10b981', 
                               borderRadius: formData.sty === 'style1' ? '9999px' : 
@@ -897,7 +893,7 @@ const Home: React.FC = () => {
                               borderBottom: formData.sty === 'style5' ? '4px solid rgba(0,0,0,0.2)' : 'none'
                           }}
                       >
-                        <FaLock size={10} /> {formData.buttonName || "Get Link"}
+                        <FaLock size={8} className="sm:text-[10px]" /> {formData.buttonName || "Get Link"}
                       </button>
                   </div>
                 </div>
