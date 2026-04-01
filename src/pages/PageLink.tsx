@@ -142,7 +142,7 @@ export function PageLink() {
     TikTok: { flw: 'Follow Account', like: 'Like Video' },
     Website: { visit: 'Visit Website' },
     Instagram: { flw: 'Follow Account', like: 'Like Post' },
-    Facebook: { like: 'Like Page', grp: 'Join Group' },
+    Facebook: { flw: 'Follow Profile', like: 'Like Page', grp: 'Join Group' },
   };
 
   const platformActionIcon: { [platform: string]: { [baseAction: string]: any } } = {
@@ -152,7 +152,7 @@ export function PageLink() {
     TikTok: { flw: FaTiktok, like: FaThumbsUp },
     Website: { visit: FaGlobe },
     Instagram: { flw: FaInstagram, like: FaThumbsUp },
-    Facebook: { like: FaFacebook, grp: FaUsers },
+    Facebook: { flw: FaFacebook, like: FaFacebook, grp: FaUsers },
   };
 
   const getButtonText = (platform: string, action: string, buttonName?: string) => {
