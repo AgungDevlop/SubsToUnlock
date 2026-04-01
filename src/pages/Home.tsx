@@ -57,6 +57,7 @@ const getActionIcon = (platform: string, key: string): IconType => {
   if (prefix === 'grp' || prefix === 'chan') return FaUsers;
   if (prefix === 'flw' && platform === 'TikTok') return FaTiktok;
   if (prefix === 'flw' && platform === 'Instagram') return FaInstagram;
+  if (prefix === 'flw' && platform === 'Facebook') return FaFacebook;
   if (prefix === 'visit') return FaGlobe;
   if (prefix === 'pass') return FaLock;
   if (prefix === 'note') return FaStickyNote;
@@ -243,8 +244,9 @@ const PlatformInputs = memo(({
       },
     },
     Facebook: {
-      options: ["+ Like Page", "+ Join Group"],
+      options: ["+ Follow Profile", "+ Like Page", "+ Join Group"],
       inputs: {
+        "Follow Profile": { icon: FaFacebook, placeholder: (i: number) => `Profile URL ${i + 1}`, key: (i: number) => `flw${i + 1}` },
         "Like Page": { icon: FaThumbsUp, placeholder: (i: number) => `Page URL ${i + 1}`, key: (i: number) => `like${i + 1}` },
         "Join Group": { icon: FaUsers, placeholder: (i: number) => `Group URL ${i + 1}`, key: (i: number) => `grp${i + 1}` },
       },
