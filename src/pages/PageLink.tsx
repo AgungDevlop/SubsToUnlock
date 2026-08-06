@@ -13,7 +13,7 @@ const API_TOKEN = "AgungDeveloper";
 
 const randomLinks = [
   "https://dulyhagglermounting.com/2082665",
-  "https://viiukuhe.com/dc/?blockID=427841"
+  "https://wwp.giriucat.com/redirect-zone/5137a848"
 ];
 
 interface AdvanceOption {
